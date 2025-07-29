@@ -2,14 +2,14 @@
     "name": "MultiGames-Studio-Launcher",
     "preductname": "MultiGames Studio Launcher",
     "version": "1.0.0",
-    "description": "Launcher Mincraft pour le serveur MultiGames Studio",
+    "description": "Launcher Mincraft pour le serveur MultiGames-Studio",
     "main": "src/app.js",
     "author": {
         "name": "Pedro33210, Multigames-Studio",
         "email": "contact@multigames-studio.fr",
         "url": "https://github.com/MultiGames-Studio"
     },
-    "url": "http://lancheur-set.multigames-studio.fr",
+    "url": "https://lancheur-set.multigames-studio.fr",
     "scripts": {
         "start": "cross-env-shell NODE_ENV=dev electron .",
         "dev": "cross-env-shell DEV_TOOL=open nodemon --exec npm start",
