@@ -29,19 +29,24 @@ class Settings {
                 let activeContainerSettings = document.querySelector('.active-container-settings')
 
                 if (id == 'save') {
-                    if (activeSettingsBTN) activeSettingsBTN.classList.toggle('active-settings-BTN');
+                    if (activeSettingsBTN) activeSettingsBTN.classList.remove('active-settings-BTN');
                     document.querySelector('#account').classList.add('active-settings-BTN');
 
-                    if (activeContainerSettings) activeContainerSettings.classList.toggle('active-container-settings');
+                    if (activeContainerSettings) activeContainerSettings.classList.remove('active-container-settings');
                     document.querySelector(`#account-tab`).classList.add('active-container-settings');
                     return changePanel('home')
                 }
 
-                if (activeSettingsBTN) activeSettingsBTN.classList.toggle('active-settings-BTN');
+                if (activeSettingsBTN) activeSettingsBTN.classList.remove('active-settings-BTN');
                 e.target.classList.add('active-settings-BTN');
 
-                if (activeContainerSettings) activeContainerSettings.classList.toggle('active-container-settings');
-                document.querySelector(`#${id}-tab`).classList.add('active-container-settings');
+                if (activeContainerSettings) activeContainerSettings.classList.remove('active-container-settings');
+                document.querySelectorAll('.container-settings').forEach(tab => tab.classList.add('hidden'));
+                let targetTab = document.querySelector(`#${id}-tab`);
+                if (targetTab) {
+                    targetTab.classList.remove('hidden');
+                    targetTab.classList.add('active-container-settings');
+                }
             }
         })
     }
@@ -249,43 +254,6 @@ class Settings {
             maxDownloadFilesInput.value = 5
             configClient.launcher_config.download_multi = 5;
             await this.db.updateData('configClient', configClient);
-        })
-
-        let themeBox = document.querySelector(".theme-box");
-        let theme = configClient?.launcher_config?.theme || "auto";
-
-        if (theme == "auto") {
-            document.querySelector('.theme-btn-auto').classList.add('active-theme');
-        } else if (theme == "dark") {
-            document.querySelector('.theme-btn-sombre').classList.add('active-theme');
-        } else if (theme == "light") {
-            document.querySelector('.theme-btn-clair').classList.add('active-theme');
-        }
-
-        themeBox.addEventListener("click", async e => {
-            if (e.target.classList.contains('theme-btn')) {
-                let activeTheme = document.querySelector('.active-theme');
-                if (e.target.classList.contains('active-theme')) return
-                activeTheme?.classList.remove('active-theme');
-
-                if (e.target.classList.contains('theme-btn-auto')) {
-                    setBackground();
-                    theme = "auto";
-                    e.target.classList.add('active-theme');
-                } else if (e.target.classList.contains('theme-btn-sombre')) {
-                    setBackground(true);
-                    theme = "dark";
-                    e.target.classList.add('active-theme');
-                } else if (e.target.classList.contains('theme-btn-clair')) {
-                    setBackground(false);
-                    theme = "light";
-                    e.target.classList.add('active-theme');
-                }
-
-                let configClient = await this.db.readData('configClient')
-                configClient.launcher_config.theme = theme;
-                await this.db.updateData('configClient', configClient);
-            }
         })
 
         let closeBox = document.querySelector(".close-box");

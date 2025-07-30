@@ -50,21 +50,23 @@ async function appdata() {
 }
 
 async function addAccount(data) {
-    let skin = false
-    if (data?.profile?.skins[0]?.base64) skin = await new skin2D().creatHeadTexture(data.profile.skins[0].base64);
+    // Skin à gauche, infos à droite, style Tailwind moderne
+    let skinUrl = `https://mc-heads.net/avatar/${data.name}`;
     let div = document.createElement("div");
-    div.classList.add("account");
+    div.className = "account flex items-center justify-between gap-4 p-4 bg-[#181818]/60 rounded-2xl shadow-lg glass-sidebar transition hover:scale-105 hover:shadow-2xl w-full";
     div.id = data.ID;
     div.innerHTML = `
-        <div class="profile-image" ${skin ? 'style="background-image: url(' + skin + ');"' : ''}></div>
-        <div class="profile-infos">
-            <div class="profile-pseudo">${data.name}</div>
-            <div class="profile-uuid">${data.uuid}</div>
+        <div class="w-20 h-20 rounded-xl overflow-hidden border-4 border-[#F8BA59] shadow bg-[#232323] flex-shrink-0">
+            <img src="${skinUrl}" alt="Skin ${data.name}" class="w-full h-full object-cover" draggable="false" />
         </div>
-        <div class="delete-profile" id="${data.ID}">
-            <div class="icon-account-delete delete-profile-icon"></div>
+        <div class="flex flex-col flex-1 min-w-0 ml-4">
+            <div class="profile-pseudo text-[#F8BA59] font-bold text-lg truncate">${data.name}</div>
+
+            <button class="delete-profile mt-3 px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-xs font-semibold transition w-max" id="${data.ID}">
+                <span class="icon-account-delete delete-profile-icon align-middle"></span> Supprimer
+            </button>
         </div>
-    `
+    `;
     return document.querySelector('.accounts-list').appendChild(div);
 }
 

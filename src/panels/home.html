@@ -23,14 +23,15 @@
     <!-- Sidebar verticale Multigames style -->
     <aside  class="relative z-10 flex flex-col justify-between items-center py-8 w-32 min-h-screen fade-in glass-global"
         style="background: linear-gradient(150deg, var(--primary) 0%, var(--secondary-dark) 60%, var(--secondary) 100%);
-               box-shadow: 8px 0 32px 0 #451F2144; overflow: hidden;">
+               box-shadow: 8px 0 32px 0 #451F2144; overflow: hidden;
+               border-radius: 0 2rem 2rem 0;">
         <!-- Filtre noir sur la sidebar -->
         <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55); z-index:1; pointer-events:none;"></div>
         <!-- Contenu de la sidebar -->
         <div class="flex flex-col items-center gap-10 relative z-10">
             <div class="relative">
                 <div alt="Profil" class="player-head w-20 h-20 rounded-3xl border-4 border-[#181818] shadow-lg object-cover bg-white"></div>
-                <span class="absolute top-1 right-1 w-5 h-5 bg-green-400 border-2 border-white rounded-full"></span>
+                <span style="border-radius:5px" class="absolute top-1 right-1 w-5 h-5 bg-green-400 border-2 border-white "></span>
             </div>
             <!-- Bloc glassmorphism arrondi pour les instances -->
             <div class="flex flex-col items-center justify-center gap-6 mt-10 min-h-[320px]">
@@ -63,7 +64,7 @@
                 <span class="text-white/70 text-sm">Loader :</span>
                 <span class="text-white font-bold server-loader">Forge</span>
             </div>
-            <div class="flex items-center gap-4 mb-6">
+            <div class="play-instance flex items-center gap-4 mb-6">
                 <button class="play-btn flex items-center gap-3 px-8 py-4 rounded-2xl bg-[#FF6A1A] hover:bg-[#F8BA59] text-white font-bold text-2xl shadow-xl transition-all duration-200">
                     <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20"><path d="M6 4l12 6-12 6V4z"/></svg>
                     Jouer
@@ -73,6 +74,13 @@
                         <path d="M12 15.5A3.5 3.5 0 1112 8.5a3.5 3.5 0 010 7zm7.94-2.06a1 1 0 00.26-1.09l-1.43-4.14a1 1 0 00-.76-.65l-4.14-1.43a1 1 0 00-1.09.26l-2.83 2.83a1 1 0 00-.26 1.09l1.43 4.14a1 1 0 00.76.65l4.14 1.43a1 1 0 001.09-.26l2.83-2.83z"/>
                     </svg>
                 </button>
+                
+            </div>
+            <div class="info-starting-game" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:50; pointer-events:none;">
+                <div class="flex flex-col items-center justify-center w-full pb-12">
+                    <div class="info-starting-game-text text-white text-xl font-bold mb-2">Préparation du jeu...</div>
+                    <progress class="progress-bar w-1/2 h-4 rounded-lg overflow-hidden" value="0" max="100" style="display:none;"></progress>
+                </div>
             </div>
             <!-- Sélecteur d'instance (optionnel, à afficher si plusieurs instances) -->
             <div class="flex items-center gap-2 mb-8">
@@ -182,3 +190,4 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
+

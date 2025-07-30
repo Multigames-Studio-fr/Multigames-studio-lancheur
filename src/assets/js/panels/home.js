@@ -15,18 +15,15 @@ class Home {
         this.news()
         this.socialLick()
         this.instancesSelect()
-        await this.loadSidebarInstances() // Ajoute cet appel ici
+        await this.loadSidebarInstances()
         await this.updateInstanceSelect();
         await this.updateInstanceInfo();
         document.querySelector('.settings-btn').addEventListener('click', e => changePanel('settings'))
 
-        // Ajoute l'écouteur sur le select
-        document.querySelector('.instance-select').addEventListener('change', async (e) => {
-            let configClient = await this.db.readData('configClient');
-            configClient.instance_selct = e.target.value;
-            await this.db.updateData('configClient', configClient);
-            await this.loadSidebarInstances();
-            await this.updateInstanceInfo();
+        // Ajoute ceci :
+        document.querySelector('.play-btn').addEventListener('click', e => {
+            e.stopPropagation(); // évite la propagation si besoin
+            this.startGame();
         });
     }
 
@@ -205,9 +202,13 @@ class Home {
     async startGame() {
         let launch = new Launch()
         let configClient = await this.db.readData('configClient')
-        let instance = await config.getInstanceList()
+        let instancesObj = await config.getInstanceList()
         let authenticator = await this.db.readData('accounts', configClient.account_selected)
-        let options = instance.find(i => i.name == configClient.instance_selct)
+        let options = instancesObj[configClient.instance_selct]
+        if (!options) {
+            alert("Instance sélectionnée introuvable !");
+            return;
+        }
 
         let playInstanceBTN = document.querySelector('.play-instance')
         let infoStartingBOX = document.querySelector('.info-starting-game')
