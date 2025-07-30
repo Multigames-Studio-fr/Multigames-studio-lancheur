@@ -1,7 +1,7 @@
 {
     "name": "MultiGames-Studio-Launcher",
     "preductname": "MultiGames Studio Launcher",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Launcher Mincraft pour le serveur MultiGames-Studio",
     "main": "src/app.js",
     "author": {
