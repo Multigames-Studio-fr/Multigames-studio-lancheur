@@ -433,13 +433,24 @@ class Home {
         let instance = instancesObj[selectedKey];
         if (!instance) return;
 
-        document.querySelector('.server-title').textContent = instance.displayName || instance.name || "PALADIUM";
-        document.querySelector('.server-desc').innerHTML = instance.description || "Aucune description.";
-        document.querySelector('.server-version').textContent = instance.loadder?.minecraft_version || "1.21.4";
-        document.querySelector('.server-loader').textContent = instance.loadder?.loadder_type || "Forge";
-        document.querySelector('.server-status-name').textContent = instance.status?.name || "Multigames-Studio.fr";
-        document.querySelector('.server-status-text').innerHTML =
-            `${instance.status?.text || "Opérationnel"} • <span class="font-bold text-[#F8BA59] player-count">${instance.status?.players || 0}</span> joueurs`;
+       
+    if (!instance) {
+        document.querySelector('.server-title').textContent = "Veuillez sélectionner une instance";
+        document.querySelector('.server-desc').innerHTML = "";
+        document.querySelector('.server-version').textContent = "";
+        document.querySelector('.server-loader').textContent = "";
+        document.querySelector('.server-status-name').textContent = "";
+        document.querySelector('.server-status-text').innerHTML = "";
+        return;
+    }
+
+    document.querySelector('.server-title').textContent = instance.displayName || instance.name || "PALADIUM";
+    document.querySelector('.server-desc').innerHTML = instance.description || "Aucune description.";
+    document.querySelector('.server-version').textContent = instance.loadder?.minecraft_version || "1.21.4";
+    document.querySelector('.server-loader').textContent = instance.loadder?.loadder_type || "Forge";
+    document.querySelector('.server-status-name').textContent = instance.status?.name || "Multigames-Studio.fr";
+    document.querySelector('.server-status-text').innerHTML =
+        `${instance.status?.text || "Opérationnel"} • <span class="font-bold text-[#F8BA59] player-count">${instance.status?.players || 0}</span> joueurs`;
     }
 
     getdate(e) {
