@@ -1,0 +1,220 @@
+<!-- Section de connexion avec design moderne -->
+<section class="min-h-screen bg-gradient-to-br from-[#451F21] via-[#EB843B] to-[#F8BA59] py-16 px-4 flex items-center justify-center">
+  <!-- Effets de fond animés -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#F8BA59]/20 rounded-full blur-3xl animate-pulse"></div>
+    <div class="absolute bottom-1/3 right-1/4 w-64 h-64 bg-[#451F21]/20 rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
+  </div>
+
+  <div class="relative z-10 w-full max-w-lg">
+    <!-- Conteneur principal avec effet glassmorphism -->
+    <div class="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12">
+
+      <!-- Header avec logo et titre -->
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 mx-auto mb-3">
+          <img src="/img/logo.png" alt="Logo MultiGames" class="w-full h-full object-contain" />
+        </div>
+        <h1 class="text-2xl font-mojang font-bold text-[#451F21] mb-1">
+          Connexion
+        </h1>
+        <span class="inline-block bg-[#F8BA59] text-[#451F21] font-medium px-3 py-1 rounded-full text-xs">
+          MultiGames Studio
+        </span>
+      </div>
+
+      <!-- Message d'erreur -->
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="bg-red-50 border-2 border-red-200 rounded-2xl p-4 flex items-start space-x-3 animate-shake mb-6">
+          <div class="flex-shrink-0">
+            <i class="bi bi-exclamation-triangle text-red-500 text-xl"></i>
+          </div>
+          <div>
+            <h4 class="text-red-800 font-semibold mb-1">Erreur de connexion</h4>
+            <p class="text-red-600 text-sm"><%= error %></p>
+          </div>
+        </div>
+      <% } %>
+
+      <!-- Formulaire de connexion -->
+      <form action="/login" method="POST" class="space-y-8" id="loginForm">
+
+        <!-- Champ Pseudo ou Email -->
+        <div class="relative group">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <i class="bi bi-person text-[#451F21]/60 group-focus-within:text-[#EB843B] transition-colors duration-300"></i>
+          </div>
+          <input 
+            type="text" 
+  id="identifier" 
+  name="identifier" 
+            required
+            autocomplete="username"
+            class="w-full pl-12 pr-4 py-4 bg-gray-50/50 border-2 border-gray-200 rounded-2xl text-[#451F21] font-medium placeholder-gray-400 focus:border-[#EB843B] focus:bg-white focus:outline-none transition-all duration-300"
+            placeholder="Ton pseudo ou email"
+          >
+<!-- NOUVEAU -->
+<label for="identifier" class="absolute -top-2.5 left-4 bg-white px-2 text-sm font-semibold text-[#451F21] opacity-0 group-focus-within:opacity-100 transition-opacity duration-300">
+  Pseudo ou Email
+</label>
+
+        </div>
+
+        <!-- Champ Mot de passe -->
+        <div class="relative group">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <i class="bi bi-lock text-[#451F21]/60 group-focus-within:text-[#EB843B] transition-colors duration-300"></i>
+          </div>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            required
+            autocomplete="current-password"
+            class="w-full pl-12 pr-12 py-4 bg-gray-50/50 border-2 border-gray-200 rounded-2xl text-[#451F21] font-medium placeholder-gray-400 focus:border-[#EB843B] focus:bg-white focus:outline-none transition-all duration-300"
+            placeholder="Ton mot de passe"
+          >
+          <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-4 flex items-center">
+            <i class="bi bi-eye text-[#451F21]/60 hover:text-[#EB843B] transition-colors duration-300"></i>
+          </button>
+          <label for="password" class="absolute -top-2.5 left-4 bg-white px-2 text-sm font-semibold text-[#451F21] opacity-0 group-focus-within:opacity-100 transition-opacity duration-300">
+            Mot de passe
+          </label>
+        </div>
+
+        <!-- Options de connexion -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <input type="checkbox" id="remember" name="remember" class="w-4 h-4 text-[#EB843B] bg-gray-100 border-gray-300 rounded focus:ring-[#EB843B] focus:ring-2">
+            <label for="remember" class="text-sm text-[#451F21] font-medium">Se souvenir de moi</label>
+          </div>
+          <a href="/reset" class="text-sm text-[#EB843B] hover:text-[#451F21] font-semibold underline transition-colors duration-300">
+            Mot de passe oublié ?
+          </a>
+        </div>
+
+        <!-- Bouton de connexion -->
+        <button 
+          type="submit"
+          class="w-full bg-gradient-to-r from-[#F8BA59] to-[#EB843B] text-white font-bold py-4 px-8 rounded-2xl hover:from-[#EB843B] hover:to-[#451F21] transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl active:scale-95 text-lg"
+        >
+          <span class="flex items-center justify-center space-x-2">
+            <i class="bi bi-box-arrow-in-right text-xl"></i>
+            <span>Se connecter</span>
+          </span>
+        </button>
+      </form>
+
+      <!-- Bouton de connexion avec Discord -->
+      <a href="/auth/discord" class="inline-flex items-center bg-[#5865F2] text-white font-bold py-3 px-6 rounded-xl hover:bg-[#4752c4] transition-all duration-300 w-full justify-center mb-4">
+        <i class="bi bi-discord text-xl mr-2"></i>
+        Se connecter avec Discord
+      </a>
+
+      <!-- Liens de navigation -->
+      <div class="mt-10 space-y-6">
+        <!-- Lien vers inscription -->
+        <div class="text-center">
+          <p class="text-gray-600 mb-3">Pas encore de compte ?</p>
+          <a href="/register" class="inline-flex items-center space-x-2 text-[#EB843B] hover:text-[#451F21] font-semibold transition-colors duration-300 group">
+            <i class="bi bi-person-plus group-hover:translate-x-1 transition-transform duration-300"></i>
+            <span>Créer un compte</span>
+          </a>
+        </div>
+
+        <!-- Divider -->
+        <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-200"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-4 bg-white text-gray-500">ou</span>
+          </div>
+        </div>
+
+        <!-- Retour à l'accueil -->
+        <div class="text-center">
+          <a href="/" class="inline-flex items-center space-x-2 bg-[#451F21] text-white font-semibold py-3 px-6 rounded-xl hover:bg-[#EB843B] transition-all duration-300 transform hover:scale-105 group">
+            <i class="bi bi-house group-hover:rotate-12 transition-transform duration-300"></i>
+            <span>Retour à l'accueil</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Liens footer -->
+      <div class="mt-8 pt-6 border-t border-gray-200">
+        <div class="flex flex-wrap justify-center gap-4 text-xs">
+          <a href="/cgu" class="text-gray-500 hover:text-[#EB843B] transition-colors duration-300">CGU</a>
+          <a href="/confidentialite" class="text-gray-500 hover:text-[#EB843B] transition-colors duration-300">Confidentialité</a>
+          <a href="/mentions" class="text-gray-500 hover:text-[#EB843B] transition-colors duration-300">Mentions légales</a>
+          <a href="/plan-du-site" class="text-gray-500 hover:text-[#EB843B] transition-colors duration-300">Plan du site</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Styles CSS -->
+<style>
+  /* Animation shake pour les erreurs */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+  }
+
+  .animate-shake {
+    animation: shake 0.5s ease-in-out;
+  }
+
+  /* Animation pour les éléments avec délai */
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  /* Amélioration du focus des inputs */
+  .group:focus-within .bi {
+    transform: scale(1.1);
+  }
+</style>
+
+<!-- JavaScript pour les fonctionnalités -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const password = document.getElementById('password');
+    const togglePassword = document.getElementById('togglePassword');
+    const form = document.getElementById('loginForm');
+
+    // Toggle password visibility
+    togglePassword.addEventListener('click', function() {
+      const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+      password.setAttribute('type', type);
+
+      const icon = this.querySelector('i');
+      icon.classList.toggle('bi-eye');
+      icon.classList.toggle('bi-eye-slash');
+    });
+
+    // Animation des champs au focus
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+      input.addEventListener('focus', function() {
+        this.parentElement.classList.add('scale-[1.02]');
+      });
+
+      input.addEventListener('blur', function() {
+        this.parentElement.classList.remove('scale-[1.02]');
+      });
+    });
+
+    // Animation du bouton de soumission
+    form.addEventListener('submit', function() {
+      const submitBtn = this.querySelector('button[type="submit"]');
+      submitBtn.classList.add('scale-95');
+
+      setTimeout(() => {
+        submitBtn.classList.remove('scale-95');
+      }, 150);
+    });
+  });
+</script>
