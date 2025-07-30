@@ -35,13 +35,13 @@ class Login {
         loginHome.style.display = 'block';
 
         microsoftBtn.addEventListener("click", () => {
-            popupLogin.openPopup({
-                title: 'Connexion',
-                content: 'Veuillez patienter...',
-                color: 'var(--color)'
-            });
-
+            // Affiche le popup de chargement Tailwind
+            document.getElementById('loading-popup').style.display = 'flex';
+        
             ipcRenderer.invoke('Microsoft-window', this.config.client_id).then(async account_connect => {
+                // Masque le popup de chargement
+                document.getElementById('loading-popup').style.display = 'none';
+        
                 if (account_connect == 'cancel' || !account_connect) {
                     popupLogin.closePopup();
                     return;
@@ -49,15 +49,16 @@ class Login {
                     await this.saveData(account_connect)
                     popupLogin.closePopup();
                 }
-
+        
             }).catch(err => {
+                document.getElementById('loading-popup').style.display = 'none';
                 popupLogin.openPopup({
                     title: 'Erreur',
                     content: err,
                     options: true
                 });
             });
-        })
+        });
     }
 
     async getCrack() {

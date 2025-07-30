@@ -1,50 +1,65 @@
-<div class="container">
-    <div class="login-home login-tabs">
-        <div class="login-text">Veuillez vous identifier afin de jouer.</div>
-
-        <div class="login-options">
-            <button class="connect connect-home">Connexion</button>
-            <button class="cancel cancel-home"  style="display: none;">annuler</button>
-        </div>
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#451F21] via-[#F8BA59]/10 to-[#EB843B]/20 relative overflow-hidden">
+    <!-- Particules décoratives -->
+    <div class="absolute inset-0 pointer-events-none z-0">
+        <div class="absolute top-1/4 left-1/4 w-32 h-32 bg-[#F8BA59]/20 rounded-full blur-2xl animate-pulse"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-40 h-40 bg-[#EB843B]/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
     </div>
 
-    <div class="login-offline login-tabs">
-        <div class="login-text">Veuillez entrer votre pseudo</div>
+    <div class="relative z-10 w-full max-w-md bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 flex flex-col items-center">
+        <!-- Logo -->
+        <div class="w-20 h-20 mb-6 flex items-center justify-center rounded-full bg-gradient-to-br from-[#F8BA59]/30 to-[#EB843B]/30 shadow-lg">
+            <img src="https://multigames-studio.fr/img/logo.png" alt="Logo MultiGameS Studio" class="w-16 h-16 object-contain" />
+        </div>
+        <!-- Titre -->
+        <h1 class="font-mojang text-3xl md:text-4xl font-bold text-[#451F21] mb-2 text-center tracking-wide">
+            Connexion
+        </h1>
+        <p class="text-[#7c5a5c] text-base mb-8 text-center">
+            Veuillez vous identifier afin de jouer.
+        </p>
 
-        <div class="input-login">
-            <input type="text" class="email email-offline" placeholder="Pseudo" />
+        <!-- Microsoft Login -->
+        <div class="login-home w-full flex flex-col gap-4" style="display:none;">
+            <button class="connect connect-home w-full py-3 rounded-xl bg-gradient-to-r from-[#F8BA59] to-[#EB843B] text-[#451F21] font-bold text-lg shadow-md hover:scale-105 hover:shadow-xl transition-all duration-200">
+                Connexion Microsoft
+            </button>
+            <button class="cancel cancel-home w-full py-3 rounded-xl border-2 border-[#F8BA59] text-[#F8BA59] font-bold text-lg shadow-sm hover:bg-[#F8BA59]/10 hover:text-[#451F21] transition-all duration-200" style="display: none;">
+                Annuler
+            </button>
         </div>
 
-        <div class="login-options">
-            <button class="connect connect-offline">Connexion</button>
-            <button class="cancel cancel-offline" style="display: none;">annuler</button>
-        </div>
-    </div>
-
-    <div class="login-AZauth login-tabs">
-        <div class="login-text">Veuillez vous connecter afin de jouer.</div>
-
-        <div class="input-login">
-            <input type="text" class="email email-AZauth" placeholder="E-mail" />
-            <input type="password" class="password password-AZauth" placeholder="Password" />
+        <!-- Crack Login -->
+        <div class="login-offline w-full flex flex-col gap-4" style="display:none;">
+            <input type="text" placeholder="Pseudo" class="email-offline w-full px-4 py-3 rounded-xl border border-[#F8BA59] focus:outline-none focus:ring-2 focus:ring-[#F8BA59] text-[#451F21] bg-white/80 placeholder-[#7c5a5c] font-medium" />
+            <button class="connect-offline w-full py-3 rounded-xl bg-gradient-to-r from-[#F8BA59] to-[#EB843B] text-[#451F21] font-bold text-lg shadow-md hover:scale-105 hover:shadow-xl transition-all duration-200">
+                Connexion
+            </button>
         </div>
 
-        <div class="login-options">
-            <button class="connect connect-AZauth">Connexion</button>
-            <button class="cancel cancel-AZauth" style="display: none;">annuler</button>
+        <!-- AZauth Login -->
+        <div class="login-AZauth w-full flex flex-col gap-4" style="display:none;">
+            <input type="text" placeholder="Email" class="email-AZauth w-full px-4 py-3 rounded-xl border border-[#F8BA59] focus:outline-none focus:ring-2 focus:ring-[#F8BA59] text-[#451F21] bg-white/80 placeholder-[#7c5a5c] font-medium" />
+            <input type="password" placeholder="Mot de passe" class="password-AZauth w-full px-4 py-3 rounded-xl border border-[#F8BA59] focus:outline-none focus:ring-2 focus:ring-[#F8BA59] text-[#451F21] bg-white/80 placeholder-[#7c5a5c] font-medium" />
+            <button class="connect-AZauth w-full py-3 rounded-xl bg-gradient-to-r from-[#F8BA59] to-[#EB843B] text-[#451F21] font-bold text-lg shadow-md hover:scale-105 hover:shadow-xl transition-all duration-200">
+                Connexion
+            </button>
         </div>
-    </div>
-
-    <div class="login-AZauth-A2F login-tabs">
-        <div class="login-text">Veuillez entrer le code de sécurité.</div>
-
-        <div class="input-login">
-            <input type="text" class="A2F A2F-AZauth" placeholder="Code" />
+        <!-- AZauth 2FA -->
+        <div class="login-AZauth-A2F w-full flex flex-col gap-4" style="display:none;">
+            <input type="text" placeholder="Code A2F" class="A2F-AZauth w-full px-4 py-3 rounded-xl border border-[#F8BA59] focus:outline-none focus:ring-2 focus:ring-[#F8BA59] text-[#451F21] bg-white/80 placeholder-[#7c5a5c] font-medium" />
+            <div class="flex gap-2">
+                <button class="connect-AZauth-A2F flex-1 py-3 rounded-xl bg-gradient-to-r from-[#F8BA59] to-[#EB843B] text-[#451F21] font-bold text-lg shadow-md hover:scale-105 hover:shadow-xl transition-all duration-200">
+                    Valider
+                </button>
+                <button class="cancel-AZauth-A2F flex-1 py-3 rounded-xl border-2 border-[#F8BA59] text-[#F8BA59] font-bold text-lg shadow-sm hover:bg-[#F8BA59]/10 hover:text-[#451F21] transition-all duration-200">
+                    Annuler
+                </button>
+            </div>
         </div>
 
-        <div class="login-options">
-            <button class="connect connect-AZauth-A2F">Valider</button>
-            <button class="cancel cancel-AZauth-A2F">annuler</button>
+        <!-- Footer ou lien d'aide -->
+        <div class="mt-8 text-center text-sm text-[#7c5a5c]">
+            Besoin d'aide ? <a href="http://discord.multigames-studio.fr/" target="_blank" class="text-[#F8BA59] font-semibold hover:underline">Contacte-nous sur Discord</a>
         </div>
     </div>
 </div>

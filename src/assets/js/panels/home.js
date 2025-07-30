@@ -15,78 +15,83 @@ class Home {
         this.news()
         this.socialLick()
         this.instancesSelect()
+        await this.loadSidebarInstances() // Ajoute cet appel ici
+        await this.updateInstanceSelect();
+        await this.updateInstanceInfo();
         document.querySelector('.settings-btn').addEventListener('click', e => changePanel('settings'))
+
+        // Ajoute l'écouteur sur le select
+        document.querySelector('.instance-select').addEventListener('change', async (e) => {
+            let configClient = await this.db.readData('configClient');
+            configClient.instance_selct = e.target.value;
+            await this.db.updateData('configClient', configClient);
+            await this.loadSidebarInstances();
+            await this.updateInstanceInfo();
+        });
     }
 
     async news() {
         let newsElement = document.querySelector('.news-list');
-        let news = await config.getNews().then(res => res).catch(err => false);
-        if (news) {
-            if (!news.length) {
-                let blockNews = document.createElement('div');
-                blockNews.classList.add('news-block');
-                blockNews.innerHTML = `
-                    <div class="news-header">
-                        <img class="server-status-icon" src="assets/images/icon.png">
-                        <div class="header-text">
-                            <div class="title">Aucun news n'ai actuellement disponible.</div>
-                        </div>
-                        <div class="date">
-                            <div class="day">1</div>
-                            <div class="month">Janvier</div>
+        newsElement.innerHTML = ""; // Nettoie avant d'injecter
+    
+        let news = await config.getNews().then(res => res).catch(() => false);
+    
+        const createNewsBlock = (title, content, day, month, author = null, isError = false) => {
+            const block = document.createElement('div');
+            block.className = "rounded-xl bg-white/80 shadow flex flex-col gap-2 p-4 sm:p-6";
+            block.innerHTML = `
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-3">
+                        <img class="w-10 h-10 rounded-full border-2 border-[#F8BA59]/40 bg-white" src="assets/images/icon.png" alt="icon">
+                        <div>
+                            <div class="font-bold text-[#451F21] text-base sm:text-lg">${title}</div>
+                            ${author ? `<div class="text-xs text-[#7c5a5c]">Auteur - <span>${author}</span></div>` : ""}
                         </div>
                     </div>
-                    <div class="news-content">
-                        <div class="bbWrapper">
-                            <p>Vous pourrez suivre ici toutes les news relative au serveur.</p>
-                        </div>
-                    </div>`
-                newsElement.appendChild(blockNews);
+                    <div class="flex flex-col items-center px-2">
+                        <div class="text-xl font-bold text-[#F8BA59] leading-none">${day}</div>
+                        <div class="text-xs uppercase text-[#7c5a5c]">${month}</div>
+                    </div>
+                </div>
+                <div class="text-[#451F21] text-sm sm:text-base mt-2 whitespace-pre-line">${content}</div>
+            `;
+            if(isError) block.classList.add("border", "border-red-300");
+            return block;
+        };
+    
+        if (news) {
+            if (!news.length) {
+                newsElement.appendChild(
+                    createNewsBlock(
+                        "Aucune news n'est actuellement disponible.",
+                        "Vous pourrez suivre ici toutes les news relatives au serveur.",
+                        "1", "Janvier"
+                    )
+                );
             } else {
                 for (let News of news) {
-                    let date = this.getdate(News.publish_date)
-                    let blockNews = document.createElement('div');
-                    blockNews.classList.add('news-block');
-                    blockNews.innerHTML = `
-                        <div class="news-header">
-                            <img class="server-status-icon" src="assets/images/icon.png">
-                            <div class="header-text">
-                                <div class="title">${News.title}</div>
-                            </div>
-                            <div class="date">
-                                <div class="day">${date.day}</div>
-                                <div class="month">${date.month}</div>
-                            </div>
-                        </div>
-                        <div class="news-content">
-                            <div class="bbWrapper">
-                                <p>${News.content.replace(/\n/g, '</br>')}</p>
-                                <p class="news-author">Auteur - <span>${News.author}</span></p>
-                            </div>
-                        </div>`
-                    newsElement.appendChild(blockNews);
+                    let date = this.getdate(News.publish_date);
+                    newsElement.appendChild(
+                        createNewsBlock(
+                            News.title,
+                            News.content,
+                            date.day,
+                            date.month,
+                            News.author
+                        )
+                    );
                 }
             }
         } else {
-            let blockNews = document.createElement('div');
-            blockNews.classList.add('news-block');
-            blockNews.innerHTML = `
-                <div class="news-header">
-                        <img class="server-status-icon" src="assets/images/icon.png">
-                        <div class="header-text">
-                            <div class="title">Error.</div>
-                        </div>
-                        <div class="date">
-                            <div class="day">1</div>
-                            <div class="month">Janvier</div>
-                        </div>
-                    </div>
-                    <div class="news-content">
-                        <div class="bbWrapper">
-                            <p>Impossible de contacter le serveur des news.</br>Merci de vérifier votre configuration.</p>
-                        </div>
-                    </div>`
-            newsElement.appendChild(blockNews);
+            newsElement.appendChild(
+                createNewsBlock(
+                    "Erreur",
+                    "Impossible de contacter le serveur des news.\nMerci de vérifier votre configuration.",
+                    "1", "Janvier",
+                    null,
+                    true
+                )
+            );
         }
     }
 
@@ -104,7 +109,7 @@ class Home {
         let configClient = await this.db.readData('configClient')
         let auth = await this.db.readData('accounts', configClient.account_selected)
         let instancesList = await config.getInstanceList()
-        let instanceSelect = instancesList.find(i => i.name == configClient?.instance_selct) ? configClient?.instance_selct : null
+        let instanceSelect = configClient?.instance_selct
 
         let instanceBTN = document.querySelector('.play-instance')
         let instancePopup = document.querySelector('.instance-popup')
@@ -334,6 +339,106 @@ class Home {
             new logger(pkg.name, '#7289da');
             console.log(err);
         });
+    }
+
+    async loadSidebarInstances() {
+        let configClient = await this.db.readData('configClient');
+        let auth = await this.db.readData('accounts', configClient.account_selected);
+        let instancesObj = await config.getInstanceList(); // objet {mgs: {...}, "mgs-no-mods": {...}}
+        let instanceSelect = configClient?.instance_selct;
+
+        // Mapping clé d'instance => icône
+        const iconMap = {
+            "mgs": "assets/images/mgs_icon.png",
+            "mgs-no-mods": "assets/images/mgs_no_mods_icon.png",
+            // Ajoute ici d'autres associations si besoin
+        };
+
+        const sidebar = document.getElementById('sidebar-instances');
+        sidebar.innerHTML = '';
+
+        for (let key in instancesObj) {
+            let instance = instancesObj[key];
+            // Vérifie la whitelist si besoin
+            if (instance.whitelistActive && !instance.whitelist.includes(auth?.name)) continue;
+
+            // Utilise l'icône personnalisée si présente dans le JSON, sinon fallback
+            let icon = instance.icon || iconMap[key] || 'assets/images/paladium_icon.png';
+
+            sidebar.innerHTML += `
+                <li 
+                    class="fade-in flex items-center justify-center w-12 h-12 rounded-xl bg-[#F8BA59]/10 hover:bg-[#F8BA59]/30 transition cursor-pointer ${key === instanceSelect ? 'ring-2 ring-[#F8BA59] bg-[#F8BA59]/30' : ''}" 
+                    data-instance="${key}">
+                    <img src="${icon}" class="w-8 h-8" alt="${key}" />
+                </li>
+            `;
+        }
+
+        // Ajoute une animation d'apparition progressive sur chaque instance
+        sidebar.querySelectorAll('li.fade-in').forEach((li, i) => {
+            setTimeout(() => {
+                li.classList.remove('fade-in');
+            }, 120 + i * 60);
+        });
+
+        // Ajoute l'événement de sélection
+        sidebar.querySelectorAll('li').forEach(li => {
+            li.addEventListener('click', async () => {
+                let key = li.dataset.instance;
+                configClient.instance_selct = key;
+                await this.db.updateData('configClient', configClient);
+                // Ne recharge plus la sidebar ici !
+                await this.updateInstanceSelect(); // refresh select
+                await this.updateInstanceInfo();   // refresh infos dynamiques
+                // Mets à jour le statut serveur si besoin
+                let instances = await config.getInstanceList();
+                let selected = instances[key];
+                setStatus(selected.status);
+
+                // Mets à jour l'état visuel du bouton sélectionné
+                sidebar.querySelectorAll('li').forEach(li2 => li2.classList.remove('ring-2', 'bg-[#F8BA59]/30'));
+                li.classList.add('ring-2', 'bg-[#F8BA59]/30');
+            });
+        });
+    }
+
+    async updateInstanceSelect() {
+        let configClient = await this.db.readData('configClient');
+        let auth = await this.db.readData('accounts', configClient.account_selected);
+        let instancesObj = await config.getInstanceList();
+        let select = document.querySelector('.instance-select');
+        select.innerHTML = '';
+
+        // Génère les options selon whitelist
+        for (let key in instancesObj) {
+            let instance = instancesObj[key];
+            if (instance.whitelistActive && !instance.whitelist.includes(auth?.name)) continue;
+            let option = document.createElement('option');
+            option.value = key;
+            option.textContent = instance.displayName || instance.name;
+            if (key === configClient.instance_selct) option.selected = true;
+            select.appendChild(option);
+        }
+
+        // Affiche ou masque le select selon le nombre d'instances accessibles
+        select.parentElement.style.display = select.options.length > 1 ? '' : 'none';
+    }
+
+    // Met à jour toutes les infos dynamiques
+    async updateInstanceInfo() {
+        let configClient = await this.db.readData('configClient');
+        let instancesObj = await config.getInstanceList();
+        let selectedKey = configClient?.instance_selct;
+        let instance = instancesObj[selectedKey];
+        if (!instance) return;
+
+        document.querySelector('.server-title').textContent = instance.displayName || instance.name || "PALADIUM";
+        document.querySelector('.server-desc').innerHTML = instance.description || "Aucune description.";
+        document.querySelector('.server-version').textContent = instance.loadder?.minecraft_version || "1.21.4";
+        document.querySelector('.server-loader').textContent = instance.loadder?.loadder_type || "Forge";
+        document.querySelector('.server-status-name').textContent = instance.status?.name || "Multigames-Studio.fr";
+        document.querySelector('.server-status-text').innerHTML =
+            `${instance.status?.text || "Opérationnel"} • <span class="font-bold text-[#F8BA59] player-count">${instance.status?.players || 0}</span> joueurs`;
     }
 
     getdate(e) {

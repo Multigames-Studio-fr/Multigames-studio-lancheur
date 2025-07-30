@@ -55,7 +55,7 @@ class Settings {
                     popupAccount.openPopup({
                         title: 'Connexion',
                         content: 'Veuillez patienter...',
-                        color: 'var(--color)'
+
                     })
 
                     if (id == 'add') {

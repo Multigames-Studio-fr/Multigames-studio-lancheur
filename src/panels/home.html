@@ -1,61 +1,184 @@
-<div class="container">
-    <div class="status-server">
-        <img class="server-status-icon" src="assets/images/icon.png">
-        <div class="server-status-infos">
-            <div class="server-status-name">Minecraft</div>
-            <div class="server-status-text">operationeel - 0 ms</div>
-        </div>
-        <div class="status-player-count">
-            <div class="player-count">0</div>
-        </div>
-    </div>
-
-    <div class="home-bottom">
-        <div class="new-tab">
-            <div class="titre-tab-new">Actualités</div>
-            <div class="news-list content-scroll"></div>
-        </div>
-        <div class="social-tab">
-            <div class="social-list content-scroll">
-                <div data-url="https://discord.gg/e9q7Yr2cuQ" class="social-block">
-                    <div class="icon-discord icon-social"></div>
-                </div>
-
-                <div data-url="https://github.com/luuxis" class="social-block">
-                    <div class="icon-github icon-social"></div>
-                </div>
-
-                <div data-url="https://www.youtube.com/LuuxisHD" class="social-block">
-                    <div class="icon-youtube icon-social"></div>
+<div class="flex min-h-screen w-full relative" style="background: url('assets/images/bg_paladium.jpg') center/cover no-repeat;">
+    <!-- Overlay sombre global -->
+    <div class="absolute inset-0 bg-black/60 z-0"></div>
+    <!-- Overlay glassmorphism global -->
+    <div class="absolute inset-0 z-0" style="backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);"></div>
+    <style>
+    :root {
+        --primary: #451F21;
+        --secondary: #F8BA59;
+        --secondary-dark: #EB843B;
+        --white: #FFFFFF;
+    }
+    /* Glassmorphism global */
+    .glass-global {
+        background: rgba(24,24,24,0.30);
+        border-radius: 2rem;
+        box-shadow: 0 8px 32px 0 #00000033;
+        border: 1px solid rgba(255,255,255,0.10);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+    }
+    </style>
+    <!-- Sidebar verticale Multigames style -->
+    <aside  class="relative z-10 flex flex-col justify-between items-center py-8 w-32 min-h-screen fade-in glass-global"
+        style="background: linear-gradient(150deg, var(--primary) 0%, var(--secondary-dark) 60%, var(--secondary) 100%);
+               box-shadow: 8px 0 32px 0 #451F2144; overflow: hidden;">
+        <!-- Filtre noir sur la sidebar -->
+        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55); z-index:1; pointer-events:none;"></div>
+        <!-- Contenu de la sidebar -->
+        <div class="flex flex-col items-center gap-10 relative z-10">
+            <div class="relative">
+                <div alt="Profil" class="player-head w-20 h-20 rounded-3xl border-4 border-[#181818] shadow-lg object-cover bg-white"></div>
+                <span class="absolute top-1 right-1 w-5 h-5 bg-green-400 border-2 border-white rounded-full"></span>
+            </div>
+            <!-- Bloc glassmorphism arrondi pour les instances -->
+            <div class="flex flex-col items-center justify-center gap-6 mt-10 min-h-[320px]">
+                <div class="glass-sidebar bg-[#181818]/60 rounded-3xl py-8 px-4 flex flex-col gap-6 shadow-2xl border border-white/10"
+                     style="backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+                    <ul id="sidebar-instances" class="flex flex-col gap-8 items-center justify-center">
+                        <!-- JS: injecte dynamiquement les boutons d'instances ici -->
+                    </ul>
                 </div>
             </div>
         </div>
-    </div>
+        <!-- Bouton notification en bas -->
+        <button class="w-16 h-16 flex items-center justify-center rounded-2xl bg-[#181818] text-white hover:bg-[#F8BA59]/80 transition shadow-xl mb-4 relative z-10">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+        </button>
+    </aside>
 
-    <div class="sidebar">
-        <div class="player-options">
-            <div class="player-head"></div>
-        </div>
-
-        <div class="play-elements">
-            <div class="play-instance">
-                <button class="play-btn">Jouer</button>
-                <div class="instance-select icon-arrow"></div>
+    <!-- Main content glassmorphism -->
+    <main class="relative z-10 flex-1 flex flex-col justify-center px-20 fade-in glass-global"
+        style="margin:2rem; padding:2rem;">
+        <div class="max-w-2xl pt-12">
+            <span class="inline-block px-4 py-1 bg-white/10 text-[#F8BA59] font-semibold rounded-full text-xs mb-4 tracking-widest">LE PLUS POPULAIRE</span>
+            <h1 class="text-5xl font-extrabold text-white drop-shadow-lg mb-2 font-mojang server-title">PALADIUM</h1>
+            <p class="text-lg text-white/90 font-medium mb-2 server-desc">Paladium est le premier serveur pvp faction français.<br>Nous proposons une aventure exclusive sur Minecraft !</p>
+            <div class="flex items-center gap-4 mb-2">
+                <span class="text-white/70 text-sm">Version :</span>
+                <span class="text-white font-bold server-version">1.21.4</span>
+                <span class="text-white/70 text-sm">Loader :</span>
+                <span class="text-white font-bold server-loader">Forge</span>
             </div>
-            <div class="info-starting-game">
-                <div class="info-starting-game-text">Connexion...</div>
-                <progress value="0" max="0" class="progress-bar"></progress>
+            <div class="flex items-center gap-4 mb-6">
+                <button class="play-btn flex items-center gap-3 px-8 py-4 rounded-2xl bg-[#FF6A1A] hover:bg-[#F8BA59] text-white font-bold text-2xl shadow-xl transition-all duration-200">
+                    <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20"><path d="M6 4l12 6-12 6V4z"/></svg>
+                    Jouer
+                </button>
+                <button class="settings-btn flex items-center justify-center w-12 h-12 rounded-xl bg-[#181818] hover:bg-[#F8BA59]/80 text-white transition shadow-lg">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 15.5A3.5 3.5 0 1112 8.5a3.5 3.5 0 010 7zm7.94-2.06a1 1 0 00.26-1.09l-1.43-4.14a1 1 0 00-.76-.65l-4.14-1.43a1 1 0 00-1.09.26l-2.83 2.83a1 1 0 00-.26 1.09l1.43 4.14a1 1 0 00.76.65l4.14 1.43a1 1 0 001.09-.26l2.83-2.83z"/>
+                    </svg>
+                </button>
+            </div>
+            <!-- Sélecteur d'instance (optionnel, à afficher si plusieurs instances) -->
+            <div class="flex items-center gap-2 mb-8">
+                <span class="text-[#F8BA59] font-bold text-xl"><!-- Icone instance dynamique --></span>
+                <select class="instance-select bg-white/90 text-[#181818] font-semibold rounded-xl px-4 py-2 shadow focus:outline-none">
+                    <!-- JS: injecte les options ici -->
+                </select>
+            </div>
+            <!-- Statut serveur -->
+            <div class="flex items-center gap-4 mt-2">
+                <span class="server-status-dot w-3 h-3 rounded-full bg-green-400"></span>
+                <span class="text-white font-semibold text-lg server-status-name">Multigames-Studio.fr</span>
+                <span class="text-white/70 text-base server-status-text">Opérationnel • <span class="font-bold text-[#F8BA59] player-count">0</span> joueurs</span>
             </div>
         </div>
-
-        <div class="settings-btn icon-settings"></div>
-    </div>
-
-    <div class="instance-popup">
-        <div class="instances-tab">
-            <div class="close-popup icon-close"></div>
-            <p>Choisissez votre instance...</p>
-            <div class="instances-List"></div>
-        </div>
-    </div>
+    </main>
 </div>
+<!-- Ajoute ce bloc dans <head> ou juste avant </body> -->
+<style>
+/* Apparition douce du contenu principal */
+main .max-w-2xl {
+    animation: fadeInUp 0.7s cubic-bezier(.4,0,.2,1);
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(32px);}
+    to   { opacity: 1; transform: none;}
+}
+
+/* Apparition douce de la sidebar */
+aside {
+    animation: fadeInLeft 0.7s cubic-bezier(.4,0,.2,1);
+}
+@keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(-32px);}
+    to   { opacity: 1; transform: none;}
+}
+
+/* Animation d'apparition générique */
+.fade-in {
+    opacity: 0;
+    transform: translateY(32px);
+    animation: fadeInUp 0.7s cubic-bezier(.4,0,.2,1) forwards;
+}
+
+/* Boutons principaux : effet de survol doux et léger */
+.play-btn, .settings-btn, .w-14.h-14 {
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.18s;
+    will-change: transform, box-shadow;
+}
+.play-btn:hover {
+    background: #F8BA59;
+    color: #181818;
+    box-shadow: 0 6px 24px 0 #F8BA5977;
+    transform: translateY(-2px) scale(1.04);
+}
+.settings-btn:hover, .w-14.h-14:hover {
+    background: #F8BA59;
+    color: #181818;
+    box-shadow: 0 4px 16px 0 #F8BA5977;
+    transform: scale(1.06);
+}
+
+/* Animation sur la sidebar (instances) */
+#sidebar-instances li {
+    transition: transform 0.16s cubic-bezier(.4,0,.2,1), box-shadow 0.16s;
+    will-change: transform, box-shadow;
+}
+#sidebar-instances li:hover {
+    transform: scale(1.08);
+    box-shadow: 0 2px 12px 0 #F8BA5977;
+}
+
+/* Animation sur l'avatar joueur */
+.player-head {
+    transition: box-shadow 0.18s, transform 0.18s;
+    will-change: box-shadow, transform;
+}
+.player-head:hover {
+    box-shadow: 0 0 0 6px #F8BA59cc;
+    transform: scale(1.04);
+}
+
+/* Animation sur le select d'instance */
+.instance-select {
+    transition: box-shadow 0.16s, border 0.16s;
+}
+.instance-select:focus {
+    box-shadow: 0 0 0 2px #F8BA59cc;
+    border-color: #F8BA59;
+}
+
+/* Animation sur le dot de statut serveur */
+.server-status-dot {
+    animation: pulse 1.4s cubic-bezier(.4,0,.2,1) infinite alternate;
+}
+@keyframes pulse {
+    from { box-shadow: 0 0 0 0 #4ade80aa; }
+    to   { box-shadow: 0 0 0 10px #4ade8000; }
+}
+</style>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.fade-in').forEach((el, i) => {
+        setTimeout(() => {
+            el.classList.remove('fade-in');
+        }, 150 + i * 80);
+    });
+});
+</script>
