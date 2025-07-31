@@ -9,7 +9,7 @@
         "email": "contact@multigames-studio.fr",
         "url": "https://github.com/MultiGames-Studio"
     },
-    "url": "https://lancheur-set.multigames-studio.fr",
+    "url": "https://lancheur-set.multigames-studio.fr:6730",
     "scripts": {
         "start": "cross-env-shell NODE_ENV=dev electron .",
         "dev": "cross-env-shell DEV_TOOL=open nodemon --exec npm start",
