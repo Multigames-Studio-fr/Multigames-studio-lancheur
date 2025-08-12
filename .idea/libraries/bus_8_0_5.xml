@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="bus-8.0.5">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/data/.mgs/loader/neoforge/libraries/net/neoforged/bus/8.0.5/bus-8.0.5.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

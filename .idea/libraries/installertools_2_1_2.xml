@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="installertools-2.1.2">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/data/.mgs/loader/neoforge/libraries/net/neoforged/installertools/installertools/2.1.2/installertools-2.1.2.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

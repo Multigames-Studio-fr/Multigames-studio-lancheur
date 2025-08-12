@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="at-modlauncher-11.0.2">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/data/.mgs/loader/neoforge/libraries/net/neoforged/accesstransformers/at-modlauncher/11.0.2/at-modlauncher-11.0.2.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

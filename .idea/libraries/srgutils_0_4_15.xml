@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="srgutils-0.4.15">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/data/.mgs/loader/neoforge/libraries/net/minecraftforge/srgutils/0.4.15/srgutils-0.4.15.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

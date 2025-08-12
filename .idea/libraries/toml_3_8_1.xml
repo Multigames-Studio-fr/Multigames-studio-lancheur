@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="toml-3.8.1">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/data/.mgs/loader/neoforge/libraries/com/electronwill/night-config/toml/3.8.1/toml-3.8.1.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
