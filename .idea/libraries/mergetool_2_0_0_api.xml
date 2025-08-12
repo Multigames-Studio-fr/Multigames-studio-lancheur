@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="mergetool-2.0.0-api">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/data/.mgs/loader/neoforge/libraries/net/neoforged/mergetool/2.0.0/mergetool-2.0.0-api.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

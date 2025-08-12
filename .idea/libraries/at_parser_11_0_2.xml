@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="at-parser-11.0.2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/data/.mgs/loader/neoforge/libraries/net/neoforged/accesstransformers/at-parser/11.0.2/at-parser-11.0.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="commons-codec-1.17.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/data/.mgs/libraries/commons-codec/commons-codec/1.17.1/commons-codec-1.17.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

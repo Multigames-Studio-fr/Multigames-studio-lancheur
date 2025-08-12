@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="21.4.148">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/data/.mgs/loader/neoforge/libraries/net/neoforged/neoforge/21.4.148/neoforge-21.4.148-client.jar!/" />
+      <root url="jar://$PROJECT_DIR$/data/.mgs/loader/neoforge/libraries/net/neoforged/neoforge/21.4.148/neoforge-21.4.148-universal.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

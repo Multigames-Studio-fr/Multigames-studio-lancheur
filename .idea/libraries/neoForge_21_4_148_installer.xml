@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="neoForge-21.4.148-installer">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/data/.mgs/loader/neoforge/libraries/net/neoforged/installer/neoForge-21.4.148-installer.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

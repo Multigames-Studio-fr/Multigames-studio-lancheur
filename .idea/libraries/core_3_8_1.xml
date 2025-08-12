@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="core-3.8.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/data/.mgs/loader/neoforge/libraries/com/electronwill/night-config/core/3.8.1/core-3.8.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
