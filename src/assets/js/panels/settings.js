@@ -141,12 +141,12 @@ class Settings {
         let ram = config?.java_config?.java_memory ? {
             ramMin: config.java_config.java_memory.min,
             ramMax: config.java_config.java_memory.max
-        } : { ramMin: "1", ramMax: "2" };
+        } : { ramMin: "2", ramMax: "64" };
 
         if (totalMem < ram.ramMin) {
-            config.java_config.java_memory = { min: 1, max: 2 };
+            config.java_config.java_memory = { min: 2, max: 64 };
             this.db.updateData('configClient', config);
-            ram = { ramMin: "1", ramMax: "2" }
+            ram = { ramMin: "2", ramMax: "64" }
         };
 
         let slider = new Slider(".memory-slider", parseFloat(ram.ramMin), parseFloat(ram.ramMax));
@@ -251,8 +251,8 @@ class Settings {
 
         maxDownloadFilesReset.addEventListener("click", async () => {
             let configClient = await this.db.readData('configClient')
-            maxDownloadFilesInput.value = 5
-            configClient.launcher_config.download_multi = 5;
+            maxDownloadFilesInput.value = 50
+            configClient.launcher_config.download_multi = 50;
             await this.db.updateData('configClient', configClient);
         })
 

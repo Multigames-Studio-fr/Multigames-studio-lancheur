@@ -444,7 +444,7 @@ class Home {
         return;
     }
 
-    document.querySelector('.server-title').textContent = instance.displayName || instance.name || "PALADIUM";
+    document.querySelector('.server-title').textContent = instance.displayName || instance.name || "Multigames-Studio";
     document.querySelector('.server-desc').innerHTML = instance.description || "Aucune description.";
     document.querySelector('.server-version').textContent = instance.loadder?.minecraft_version || "1.21.4";
     document.querySelector('.server-loader').textContent = instance.loadder?.loadder_type || "Forge";
