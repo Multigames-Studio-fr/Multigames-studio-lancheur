@@ -1,1 +1,26 @@
 @import "tailwindcss";
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  background: #181818;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #F8BA59 40%, #232323 100%);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #EB843B 40%, #232323 100%);
+}
+
+::-webkit-scrollbar-track {
+  background: #232323;
+  border-radius: 8px;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #F8BA59 #232323;
+}

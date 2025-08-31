@@ -29,35 +29,36 @@ class Home {
 
     async news() {
         let newsElement = document.querySelector('.news-list');
-        newsElement.innerHTML = ""; // Nettoie avant d'injecter
-    
+        newsElement.innerHTML = "";
+
         let news = await config.getNews().then(res => res).catch(() => false);
-    
+
         const createNewsBlock = (title, content, day, month, author = null, isError = false) => {
             const block = document.createElement('div');
-            block.className = "rounded-xl bg-white/80 shadow flex flex-col gap-2 p-4 sm:p-6";
+            block.className = "rounded-xl bg-black/60 shadow flex flex-col gap-2 p-4 sm:p-6";
             block.innerHTML = `
                 <div class="flex items-center justify-between gap-2">
                     <div class="flex items-center gap-3">
-                        <img class="w-10 h-10 rounded-full border-2 border-[#F8BA59]/40 bg-white" src="assets/images/icon.png" alt="icon">
+                        <img class="w-10 h-10 rounded-full  border-[#F8BA59]/40" src="assets/images/icon.png" alt="icon">
                         <div>
-                            <div class="font-bold text-[#451F21] text-base sm:text-lg">${title}</div>
+                            <div class="font-bold text-[#ffffff] text-base sm:text-lg">${title}</div>
                             ${author ? `<div class="text-xs text-[#7c5a5c]">Auteur - <span>${author}</span></div>` : ""}
                         </div>
                     </div>
                     <div class="flex flex-col items-center px-2">
                         <div class="text-xl font-bold text-[#F8BA59] leading-none">${day}</div>
-                        <div class="text-xs uppercase text-[#7c5a5c]">${month}</div>
+                        <div class="text-xs uppercase text-[#b0b0b0]">${month}</div>
                     </div>
                 </div>
-                <div class="text-[#451F21] text-sm sm:text-base mt-2 whitespace-pre-line">${content}</div>
+                <div class="text-[#e3dede] text-sm sm:text-base mt-2 whitespace-pre-line">${content}</div>
             `;
             if(isError) block.classList.add("border", "border-red-300");
             return block;
         };
-    
+
         if (news) {
-            if (!news.length) {
+            // news est un objet ou null
+            if (!news.title) {
                 newsElement.appendChild(
                     createNewsBlock(
                         "Aucune news n'est actuellement disponible.",
@@ -66,18 +67,16 @@ class Home {
                     )
                 );
             } else {
-                for (let News of news) {
-                    let date = this.getdate(News.publish_date);
-                    newsElement.appendChild(
-                        createNewsBlock(
-                            News.title,
-                            News.content,
-                            date.day,
-                            date.month,
-                            News.author
-                        )
-                    );
-                }
+                let date = this.getdate(news.publish_date);
+                newsElement.appendChild(
+                    createNewsBlock(
+                        news.title,
+                        news.content,
+                        date.day,
+                        date.month,
+                        news.author
+                    )
+                );
             }
         } else {
             newsElement.appendChild(
@@ -200,7 +199,7 @@ class Home {
     }
 
     async startGame() {
-        let launch = new Launch()
+        let launch = new Launch();
         let configClient = await this.db.readData('configClient')
         let instancesObj = await config.getInstanceList()
         let authenticator = await this.db.readData('accounts', configClient.account_selected)
@@ -210,10 +209,23 @@ class Home {
             return;
         }
 
-        let playInstanceBTN = document.querySelector('.play-instance')
-        let infoStartingBOX = document.querySelector('.info-starting-game')
-        let infoStarting = document.querySelector(".info-starting-game-text")
-        let progressBar = document.querySelector('.progress-bar')
+        // Sélectionne les bons éléments
+        let playInstanceBTN = document.querySelector('.play-instance');
+        let infoStartingBOX = document.querySelector('.info-starting-game');
+        let infoStarting = document.querySelector(".info-starting-game-text");
+        const bar = document.querySelector('.progress-bar-inner');
+        const valueEl = document.querySelector('.progress-value');
+        const labelEl = document.querySelector('.progress-label');
+
+        // Affiche la barre, cache le bouton
+        playInstanceBTN.style.display = "none";
+        infoStartingBOX.style.display = "block";
+
+        function updateProgress(pct, label) {
+            bar.style.width = pct + '%';
+            valueEl.textContent = pct.toFixed(0) + '%';
+            if (label) labelEl.textContent = label;
+        }
 
         let opt = {
             url: options.url,
@@ -256,89 +268,39 @@ class Home {
 
         launch.Launch(opt);
 
-        playInstanceBTN.style.display = "none"
-        infoStartingBOX.style.display = "block"
-        progressBar.style.display = "";
-        ipcRenderer.send('main-window-progress-load')
-
         launch.on('extract', extract => {
-            ipcRenderer.send('main-window-progress-load')
-            console.log(extract);
+            updateProgress(10, 'Extraction...');
         });
 
         launch.on('progress', (progress, size) => {
-            infoStarting.innerHTML = `Téléchargement ${((progress / size) * 100).toFixed(0)}%`
-            ipcRenderer.send('main-window-progress', { progress, size })
-            progressBar.value = progress;
-            progressBar.max = size;
+            const pct = (progress / size) * 100;
+            updateProgress(pct, 'Téléchargement...');
         });
 
         launch.on('check', (progress, size) => {
-            infoStarting.innerHTML = `Vérification ${((progress / size) * 100).toFixed(0)}%`
-            ipcRenderer.send('main-window-progress', { progress, size })
-            progressBar.value = progress;
-            progressBar.max = size;
+            const pct = (progress / size) * 100;
+            updateProgress(pct, 'Vérification...');
         });
 
-        launch.on('estimated', (time) => {
-            let hours = Math.floor(time / 3600);
-            let minutes = Math.floor((time - hours * 3600) / 60);
-            let seconds = Math.floor(time - hours * 3600 - minutes * 60);
-            console.log(`${hours}h ${minutes}m ${seconds}s`);
-        })
-
-        launch.on('speed', (speed) => {
-            console.log(`${(speed / 1067008).toFixed(2)} Mb/s`)
-        })
-
-        launch.on('patch', patch => {
-            console.log(patch);
-            ipcRenderer.send('main-window-progress-load')
-            infoStarting.innerHTML = `Patch en cours...`
+        launch.on('finish', () => {
+            updateProgress(100, 'Terminé !');
+            setTimeout(() => updateProgress(0, 'En attente...'), 1200);
         });
 
         launch.on('data', (e) => {
-            progressBar.style.display = "none"
-            if (configClient.launcher_config.closeLauncher == 'close-launcher') {
-                ipcRenderer.send("main-window-hide")
-            };
-            new logger('Minecraft', '#36b030');
-            ipcRenderer.send('main-window-progress-load')
-            infoStarting.innerHTML = `Demarrage en cours...`
-            console.log(e);
-        })
+            infoStarting.innerHTML = `Démarrage en cours...`;
+        });
 
         launch.on('close', code => {
-            if (configClient.launcher_config.closeLauncher == 'close-launcher') {
-                ipcRenderer.send("main-window-show")
-            };
-            ipcRenderer.send('main-window-progress-reset')
-            infoStartingBOX.style.display = "none"
-            playInstanceBTN.style.display = "flex"
-            infoStarting.innerHTML = `Vérification`
-            new logger(pkg.name, '#7289da');
-            console.log('Close');
+            infoStartingBOX.style.display = "none";
+            playInstanceBTN.style.display = "flex";
+            updateProgress(0, 'En attente...');
         });
 
         launch.on('error', err => {
-            let popupError = new popup()
-
-            popupError.openPopup({
-                title: 'Erreur',
-                content: err.error,
-                color: 'red',
-                options: true
-            })
-
-            if (configClient.launcher_config.closeLauncher == 'close-launcher') {
-                ipcRenderer.send("main-window-show")
-            };
-            ipcRenderer.send('main-window-progress-reset')
-            infoStartingBOX.style.display = "none"
-            playInstanceBTN.style.display = "flex"
-            infoStarting.innerHTML = `Vérification`
-            new logger(pkg.name, '#7289da');
-            console.log(err);
+            infoStartingBOX.style.display = "none";
+            playInstanceBTN.style.display = "flex";
+            updateProgress(0, 'En attente...');
         });
     }
 
@@ -366,13 +328,14 @@ class Home {
             // Utilise l'icône personnalisée si présente dans le JSON, sinon fallback
             let icon = instance.icon || iconMap[key] || 'assets/images/paladium_icon.png';
 
-            sidebar.innerHTML += `
-                <li 
-                    class="fade-in flex items-center justify-center w-12 h-12 rounded-xl bg-[#F8BA59]/10 hover:bg-[#F8BA59]/30 transition cursor-pointer ${key === instanceSelect ? 'ring-2 ring-[#F8BA59] bg-[#F8BA59]/30' : ''}" 
-                    data-instance="${key}">
-                    <img src="${icon}" class="w-8 h-8" alt="${key}" />
-                </li>
-            `;
+const selectedClass = key === instanceSelect ? ' ' : '';
+sidebar.innerHTML += `
+    <li 
+        class="fade-in flex items-center justify-center w-12 h-12 rounded-xl transition cursor-pointer${selectedClass}" 
+        data-instance="${key}">
+        <img src="${icon}" class="w-10 " alt="${key}" />
+    </li>
+`;
         }
 
         // Ajoute une animation d'apparition progressive sur chaque instance

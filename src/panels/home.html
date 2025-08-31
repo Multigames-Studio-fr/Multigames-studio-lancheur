@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="../assets/css/output.css">
+
 <div class="flex min-h-screen w-full relative"
     style="background: url('assets/images/bg_paladium.jpg') center/cover no-repeat;">
     <!-- Overlay sombre global -->
@@ -21,6 +23,16 @@
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
         }
+
+        /* Ajoute ce bloc dans un <style> existant ou nouveau */
+        .glass-sidebar {
+            transition: transform 0.18s cubic-bezier(.4, 0, .2, 1), box-shadow 0.18s;
+        }
+
+        .glass-sidebar:hover {
+            transform: translateY(-4px) scale(1.04);
+            box-shadow: 0 8px 32px 0 #F8BA5977;
+        }
     </style>
     <!-- Sidebar verticale Multigames style -->
     <aside class="relative z-10 flex flex-col justify-between items-center py-8 w-32 min-h-screen fade-in glass-global"
@@ -32,15 +44,19 @@
         <!-- Contenu de la sidebar -->
         <div class="flex flex-col items-center gap-10 relative z-10">
             <div class="relative">
-                <div alt="Profil"
-                    class="player-head w-15 h-15 rounded-3xl border-2 border-[#181818] shadow-lg object-cover bg-white">
+                                <div class="glass-sidebar bg-[#181818]/60 rounded-3xl py-2 px-2 flex flex-col gap-6 shadow-2xl border border-white/10"
+                    style="backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+                    <div alt="Profil"
+                        class="player-head flex flex-col gap-8 items-center justify-center w-14 h-14 rounded-3xl border-2 border-[#181818] shadow-lg object-cover bg-white">
+                    </div>
                 </div>
+               
                 <span style="border-radius:5px"
                     class="absolute top-1 right-1 w-5 h-5 bg-green-400 border-2 border-white "></span>
             </div>
             <!-- Bloc glassmorphism arrondi pour les instances -->
             <div class="flex flex-col items-center justify-center gap-6 mt-10 min-h-[320px]">
-                <div class="glass-sidebar bg-[#181818]/60 rounded-3xl py-8 px-4 flex flex-col gap-6 shadow-2xl border border-white/10"
+                <div class="glass-sidebar bg-[#181818]/60 hover:bg-[#F8BA59]/30 rounded-3xl py-4 px-4 flex flex-col gap-6 shadow-2xl border border-white/10"
                     style="backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
                     <ul id="sidebar-instances" class="flex flex-col gap-8 items-center justify-center">
                         <!-- JS: injecte dynamiquement les boutons d'instances ici -->
@@ -49,7 +65,7 @@
             </div>
         </div>
         <!-- Bouton notification en bas -->
-         <div class="flex flex-col items-center gap-y-2">
+         <div class="flex flex-col items-center gap-y-1">
             <!-- Discord Icon Button (just the head) -->
             <a href="https://discord.multigames-studio.fr" target="_blank" class="w-16 h-16 flex items-center justify-center rounded-2xl bg-[#181818] text-white hover:bg-[#F8BA59]/80 transition shadow-xl relative z-10">
             <!-- Discord head only -->
@@ -73,8 +89,8 @@
 
     <!-- Main content glassmorphism -->
     <main class="relative z-10 flex-1 flex flex-col justify-center px-20 fade-in glass-global"
-        style="margin:2rem; padding:2rem;">
-        <div class="max-w-2xl pt-12">
+        style="margin-top:2rem; margin-bottom:2rem; border-radius: 0 2rem 2rem 0; margin-right:2rem; padding:2rem;">
+        <div class="max-w-2xl pt-9">
             <span
                 class="inline-block px-4 py-1 bg-white/10 text-[#F8BA59] font-semibold rounded-full text-xs mb-4 tracking-widest">LE
                 PLUS POPULAIRE</span>
@@ -90,14 +106,14 @@
             </div>
             <div class="play-instance flex items-center gap-4 mb-6">
                 <button
-                    class="play-btn flex items-center gap-3 px-8 py-4 rounded-2xl bg-[#FF6A1A] hover:bg-[#F8BA59] text-white font-bold text-2xl shadow-xl transition-all duration-200">
+                    class="play-btn flex items-center gap-3 px-8 py-3 rounded-2xl bg-[#FF6A1A] hover:bg-[#F8BA59] text-white font-bold text-2xl shadow-xl transition-all duration-200">
                     <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M6 4l12 6-12 6V4z" />
                     </svg>
                     Jouer
                 </button>
                 <button
-                    class="settings-btn flex items-center justify-center w-12 h-12 rounded-xl bg-[#181818] hover:bg-[#F8BA59]/80 text-white transition shadow-lg">
+                    class="settings-btn flex items-center justify-center w-12 h-12 w-14.5 h-14.5 rounded-xl bg-[#181818] hover:bg-[#F8BA59]/80 text-white transition shadow-lg">
 
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white"fill=" currentColor" class="bi bi-gear"
                         viewBox="0 0 16 16">
@@ -109,12 +125,35 @@
                 </button>
 
             </div>
-            <div class="info-starting-game"
-                style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:50; pointer-events:none;">
-                <div class="flex flex-col items-center justify-center w-full pb-12">
-                    <div class="info-starting-game-text text-white text-xl font-bold mb-2">Préparation du jeu...</div>
-                    <progress class="progress-bar w-1/2 h-4 rounded-lg overflow-hidden" value="0" max="100"
-                        style="display:none;"></progress>
+   
+            <!-- Remplace tout le bloc .play-instance par le bloc .info-starting-game ci-dessous -->
+            <div class="info-starting-game hidden game-launch-overlay h-20 z-50 pointer-events-none">
+                <div class="flex flex-col  justify-center w-full pb-12 gap-3">
+                    <div class="flex items-center gap-3">
+                        <span class="inline-flex ">
+                            <svg class="w-6 h-6 text-[#F8BA59]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10" stroke-opacity=".4"/>
+                                <path d="M12 6v6l3.5 3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <div class="info-starting-game-text text-white text-xl font-bold tracking-wide" aria-live="polite">Préparation du jeu...</div>
+                    </div>
+                    <div class=" max-w-xl flex flex-col gap-2">
+                        <div class="relative h-4 rounded-lg overflow-hidden bg-white/15 backdrop-blur-sm border border-white/10">
+                            <div class="progress-bar-inner h-full w-0 bg-gradient-to-r from-[#FF6A1A] via-[#F8BA59] to-[#FF6A1A]
+                                        shadow-[0_0_0_1px_#00000055_inset] transition-[width] duration-300 ease-out"></div>
+                            <div class="absolute inset-0 bg-[linear-gradient(120deg,#ffffff22_25%,transparent_25%,transparent_50%,#ffffff22_50%,#ffffff22_75%,transparent_75%,transparent)] bg-[length:200%_100%] animate-[shine_2.2s_linear_infinite] pointer-events-none mix-blend-overlay"></div>
+                        </div>
+                        <div class="flex justify-between text-xs font-semibold text-white/70 tabular-nums">
+                            <span class="progress-label">Initialisation...</span>
+                            <span class="progress-value">0%</span>
+                        </div>
+                    </div>
+                    <button type="button"
+                            class="cancel-launch pointer-events-auto mt-1 px-4 py-1.5 text-sm font-semibold rounded-md bg-white/10 hover:bg-white/20 text-white border border-white/15 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                            style="backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display:none;">
+                        Annuler
+                    </button>
                 </div>
             </div>
             <!-- Sélecteur d'instance (optionnel, à afficher si plusieurs instances) -->
@@ -132,6 +171,46 @@
                 <span class="text-white/70 text-base server-status-text">Opérationnel • <span
                         class="font-bold text-[#F8BA59] player-count">0</span> joueurs</span>
             </div>
+
+            <!-- Section News -->
+            <section class="mt-12 hidden">
+                <h2 class="text-3xl font-bold text-white mb-4 flex items-center gap-3">
+                    <span class="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-[#F8BA59]/15 border border-[#F8BA59]/30 text-[#F8BA59]">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
+                             viewBox="0 0 24 24">
+                            <path d="M4 6h16M4 12h10M4 18h16"></path>
+                        </svg>
+                    </span>
+                    Actualités
+                    <button class="refresh-news text-sm ml-4 px-3 py-1.5 rounded-lg bg-[#181818]/70 hover:bg-[#F8BA59]/80 hover:text-[#181818] text-white border border-white/10 transition shadow">
+                        Rafraîchir
+                    </button>
+                </h2>
+                <div class="news-list" id="news-list">
+                    <!-- News grid aligned to the right, cards injected dynamically -->
+                    <div class="news-grid" aria-live="polite"></div>
+
+                    <!-- Template for a single news card (horizontal card used in the right column) -->
+                    <template id="news-card-template">
+                        <article class="news-card glass-global relative overflow-hidden" role="article">
+                            <div class="news-image absolute inset-0 bg-cover bg-center"></div>
+                            <div class="news-overlay absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            <div class="news-badges absolute left-4 top-4 flex gap-2"></div>
+                            <div class="news-content absolute left-4 bottom-4 right-4 text-left text-white">
+                                <div class="news-title-stacked font-extrabold text-xl leading-tight"></div>
+                                <div class="news-excerpt-stacked mt-1 text-sm text-white/80"></div>
+                                <div class="flex items-center justify-between mt-2 text-xs text-white/70">
+                                    <div class="news-date"><span class="news-date-day font-semibold"></span> <span class="news-date-month ml-1"></span></div>
+                                    <button class="news-open-button glass-btn px-3 py-1 font-semibold">Voir</button>
+                                </div>
+                            </div>
+                            <button class="news-play absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 transition-opacity">
+                                <svg class="w-16 h-16 text-white drop-shadow-xl" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                            </button>
+                        </article>
+                    </template>
+                </div>
+            </section>
         </div>
     </main>
 </div>
@@ -177,7 +256,31 @@
         transform: translateY(32px);
         animation: fadeInUp 0.7s cubic-bezier(.4, 0, .2, 1) forwards;
     }
-
+    /* Right-aligned news grid */
+    .news-list { display:flex; justify-content:flex-end; }
+    .news-grid {
+        width: 820px; /* wider column for two cards */
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* two cards side-by-side */
+        gap: 18px;
+        align-items: start;
+    }
+    .news-card {
+        height: 160px;
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        background: #00000033;
+    }
+    .news-image { width: 100%; height: 100%; }
+    .news-overlay { pointer-events: none; }
+    .news-badges { pointer-events: none; }
+    .news-content { pointer-events: auto; }
+    .news-title-stacked { font-size: 1.05rem; }
+    .news-excerpt-stacked { font-size: 0.95rem; }
+    .news-open-button { white-space: nowrap; }
+    .news-play { pointer-events: none; }
+    .news-card:hover .news-play { opacity: 1; pointer-events: none; }
     /* Boutons principaux : effet de survol doux et léger */
     .play-btn,
     .settings-btn,
@@ -199,28 +302,6 @@
         color: #181818;
         box-shadow: 0 4px 16px 0 #F8BA5977;
         transform: scale(1.06);
-    }
-
-    /* Animation sur la sidebar (instances) */
-    #sidebar-instances li {
-        transition: transform 0.16s cubic-bezier(.4, 0, .2, 1), box-shadow 0.16s;
-        will-change: transform, box-shadow;
-    }
-
-    #sidebar-instances li:hover {
-        transform: scale(1.08);
-        box-shadow: 0 2px 12px 0 #F8BA5977;
-    }
-
-    /* Animation sur l'avatar joueur */
-    .player-head {
-        transition: box-shadow 0.18s, transform 0.18s;
-        will-change: box-shadow, transform;
-    }
-
-    .player-head:hover {
-        box-shadow: 0 0 0 6px #F8BA59cc;
-        transform: scale(1.04);
     }
 
     /* Animation sur le select d'instance */
@@ -248,6 +329,21 @@
         }
     }
 </style>
+<style>
+/* Button glass style (kept in main style block to avoid parser issues) */
+.glass-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: #FFFFFF;
+    border-radius: 10px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: transform .12s ease, background .12s ease;
+}
+.glass-btn:hover { transform: translateY(-2px); background: rgba(255,255,255,0.10); }
+</style>
+    
+</style>
 <script>
     window.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.fade-in').forEach((el, i) => {
@@ -256,4 +352,164 @@
             }, 150 + i * 80);
         });
     });
+
+    // Hook bouton refresh (si Home.news() existe déjà)
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.querySelector('.refresh-news');
+        if (btn && typeof window.homeInstance?.news === 'function') {
+            btn.addEventListener('click', () => {
+                btn.disabled = true;
+                btn.classList.add('opacity-60');
+                window.homeInstance.news().finally(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-60');
+                });
+            });
+        }
+    });
+</script>
+<script>
+(function () {
+    const root = document.querySelector('.game-launch-overlay');
+    if (!root) return;
+    const bar = root.querySelector('.progress-bar-inner');
+    const valueEl = root.querySelector('.progress-value');
+    const labelEl = root.querySelector('.progress-label');
+
+    window.gameLaunchUI = {
+        show(label = 'Préparation du jeu...') {
+            labelEl.textContent = label;
+            root.classList.remove('hidden');
+            requestAnimationFrame(() => root.classList.add('active'));
+        },
+        hide() {
+            root.classList.remove('active');
+            setTimeout(() => root.classList.add('hidden'), 380);
+        },
+        progress(pct, label) {
+            if (pct < 0) pct = 0;
+            if (pct > 100) pct = 100;
+            bar.style.width = pct + '%';
+            valueEl.textContent = pct.toFixed(0) + '%';
+            if (label) labelEl.textContent = label;
+        },
+        reset() {
+            this.progress(0, 'Initialisation...');
+        }
+    };
+})();
+</script>
+<style>
+/* Latest news specific styling */
+.news-card.glass-global { background: rgba(24,24,24,0.36); border-radius:12px; padding:12px; display:flex; align-items:center; gap:12px; }
+.news-thumb { width:140px; height:84px; background-size:cover; background-position:center; border-radius:8px; flex-shrink:0; }
+.news-title { margin:0; }
+.news-excerpt { margin:0; }
+/* Glass button for news */
+.glass-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: #FFFFFF;
+    border-radius: 10px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: transform .12s ease, background .12s ease;
+}
+.glass-btn:hover { transform: translateY(-2px); background: rgba(255,255,255,0.10); }
+</style>
+<script>
+// Helper: create a news card from data and inject into .news-list
+window.renderNewsCard = function (data) {
+    const tpl = document.getElementById('news-card-template');
+    if (!tpl) return null;
+    const el = tpl.content.firstElementChild.cloneNode(true);
+    const imgEl = el.querySelector('.news-image');
+    const badgesEl = el.querySelector('.news-badges');
+    const title = el.querySelector('.news-title-stacked');
+    const excerpt = el.querySelector('.news-excerpt-stacked');
+    const dateDay = el.querySelector('.news-date-day');
+    const dateMonth = el.querySelector('.news-date-month');
+    const openBtn = el.querySelector('.news-open-button');
+    const playBtn = el.querySelector('.news-play');
+
+    if (data.thumb) imgEl.style.backgroundImage = `url('${data.thumb}')`;
+    if (data.title) title.textContent = data.title;
+    if (data.excerpt) excerpt.textContent = data.excerpt;
+    if (data.link) el.setAttribute('data-link', data.link);
+
+    // badges (array of text or HTML snippets)
+    badgesEl.innerHTML = '';
+    if (Array.isArray(data.badges)) {
+        data.badges.forEach(b => {
+            const span = document.createElement('span');
+            span.className = 'inline-block px-2 py-1 bg-white/10 text-xs rounded font-semibold';
+            span.textContent = b;
+            badgesEl.appendChild(span);
+        });
+    }
+
+    // date support
+    if (data.date) {
+        if (typeof data.date === 'string') {
+            const d = new Date(data.date);
+            if (!isNaN(d)) {
+                dateDay.textContent = d.getDate();
+                dateMonth.textContent = d.toLocaleString('default', { month: 'short' });
+            }
+        } else if (typeof data.date === 'object') {
+            dateDay.textContent = data.date.day || '';
+            dateMonth.textContent = data.date.month || '';
+        }
+    }
+
+    // show play overlay when data.play === true
+    if (data.play) {
+        playBtn.style.opacity = '1';
+        playBtn.style.pointerEvents = 'none';
+    }
+
+    openBtn.addEventListener('click', () => {
+        const link = el.getAttribute('data-link');
+        if (link) window.open(link, '_blank');
+    });
+
+    return el;
+};
+</script>
+<script>
+// Set the latest news content into #latest-news
+window.setLatestNews = function (data) {
+    // Populate the right-hand news grid with a single highlighted news
+    const grid = document.querySelector('.news-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    const card = window.renderNewsCard(data);
+    if (card) grid.appendChild(card);
+};
+
+// Example: if demo flag is set, populate latest news
+if (window.__demoNews === true) {
+    setLatestNews({
+        thumb: 'assets/images/placeholder1.jpg',
+        title: "Mise à jour : Nouveaux serveurs Discord",
+        excerpt: "Découvrez nos nouveaux serveurs Discord optimisés pour une meilleure expérience.",
+        link: '#'
+    });
+}
+</script>
+<script>
+// Demo: if window.__demoNews === true, inject sample cards for visual testing
+if (window.__demoNews === true) {
+    const grid = document.querySelector('.news-grid');
+    const demoData = [
+        { title: "AMERICA'S PATH", excerpt: "29 mai — Mise à jour MiniUpdate Java.", thumb: 'assets/images/placeholder1.jpg', date: '2025-05-29', link: '#', badges: ['MiniUpdate','Java'] },
+        { title: "ETDER — Spawn Event", excerpt: "100€ à gagner — participez au spawn.", thumb: 'assets/images/placeholder2.jpg', date: '2025-05-29', link: '#', play: true }
+    ];
+    // Remove skeletons and append demo cards
+    document.querySelectorAll('.skeleton-grid').forEach(s => s.remove());
+    demoData.forEach(d => {
+        const card = window.renderNewsCard(d);
+        if (card) grid.appendChild(card);
+    });
+}
 </script>

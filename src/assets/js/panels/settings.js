@@ -132,37 +132,51 @@ class Settings {
         let totalMem = Math.trunc(os.totalmem() / 1073741824 * 10) / 10;
         let freeMem = Math.trunc(os.freemem() / 1073741824 * 10) / 10;
 
+        // Mettre à jour les informations système
         document.getElementById("total-ram").textContent = `${totalMem} Go`;
         document.getElementById("free-ram").textContent = `${freeMem} Go`;
 
-        let sliderDiv = document.querySelector(".memory-slider");
-        sliderDiv.setAttribute("max", Math.trunc((80 * totalMem) / 100));
-
+        // Configuration de la RAM
         let ram = config?.java_config?.java_memory ? {
-            ramMin: config.java_config.java_memory.min,
-            ramMax: config.java_config.java_memory.max
-        } : { ramMin: "2", ramMax: "64" };
+            ramValue: config.java_config.java_memory.max || 8
+        } : { ramValue: 8 };
 
-        if (totalMem < ram.ramMin) {
-            config.java_config.java_memory = { min: 2, max: 64 };
-            this.db.updateData('configClient', config);
-            ram = { ramMin: "2", ramMax: "64" }
-        };
+        // Définir les limites du slider
+        let maxRam = Math.trunc((50 * totalMem) / 100); // 50% de la RAM totale
+        let ramSlider = document.getElementById("ram-slider");
+        let ramValue = document.getElementById("ram-value");
+        let ramMin = document.getElementById("ram-min");
+        let ramMax = document.getElementById("ram-max");
 
-        let slider = new Slider(".memory-slider", parseFloat(ram.ramMin), parseFloat(ram.ramMax));
+        // Configurer le slider
+        ramSlider.max = maxRam;
+        ramSlider.value = ram.ramValue;
+        ramMax.textContent = `${maxRam} Go`;
+        ramValue.textContent = `${ram.ramValue} Go`;
 
-        let minSpan = document.querySelector(".slider-touch-left span");
-        let maxSpan = document.querySelector(".slider-touch-right span");
+        // Vérifier que la valeur actuelle ne dépasse pas la limite
+        if (ram.ramValue > maxRam) {
+            ram.ramValue = maxRam;
+            ramSlider.value = maxRam;
+            ramValue.textContent = `${maxRam} Go`;
+        }
 
-        minSpan.setAttribute("value", `${ram.ramMin} Go`);
-        maxSpan.setAttribute("value", `${ram.ramMax} Go`);
-
-        slider.on("change", async (min, max) => {
+        // Gestionnaire d'événement pour le changement de valeur
+        ramSlider.addEventListener('input', async (e) => {
+            let newValue = parseInt(e.target.value);
+            ramValue.textContent = `${newValue} Go`;
+            
+            // Sauvegarder la configuration
             let config = await this.db.readData('configClient');
-            minSpan.setAttribute("value", `${min} Go`);
-            maxSpan.setAttribute("value", `${max} Go`);
-            config.java_config.java_memory = { min: min, max: max };
-            this.db.updateData('configClient', config);
+            if (!config.java_config) config.java_config = {};
+            if (!config.java_config.java_memory) config.java_config.java_memory = {};
+            
+            config.java_config.java_memory = {
+                min: Math.min(2, newValue), // RAM min = 2 Go ou la valeur choisie si elle est inférieure
+                max: newValue
+            };
+            
+            await this.db.updateData('configClient', config);
         });
     }
 

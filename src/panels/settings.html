@@ -1,8 +1,13 @@
-<div class="flex flex-col md:flex-row min-h-screen w-full relative" style="background: url('assets/images/bg_paladium.jpg') center/cover no-repeat;">
+<link rel="stylesheet" href="../assets/css/output.css">
+<div class="flex flex-col md:flex-row min-h-screen w-full relative" style="background: url('assets/images/bg_paladium.jpg') center/cover no-repeat; height: 100vh;">
     <!-- Overlay sombre global -->
     <div class="absolute inset-0 bg-black/60 z-0"></div>
     <!-- Overlay glassmorphism global -->
     <div class="absolute inset-0 z-0" style="backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);"></div>
+    
+    <!-- Bootstrap Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
     <style>
     :root {
         --primary: #451F21;
@@ -26,6 +31,139 @@
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
     }
+    
+    /* Animations pour les transitions */
+    .container-settings {
+        opacity: 0;
+        transform: translateX(30px);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: absolute;
+        width: 100%;
+        pointer-events: none;
+    }
+    
+    .container-settings.active-container-settings {
+        opacity: 1;
+        transform: translateX(0);
+        position: relative;
+        pointer-events: all;
+    }
+    
+    .container-settings.hidden {
+        display: none;
+    }
+    
+    /* Animation pour les boutons de navigation */
+    .nav-settings-btn {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translateX(0);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .nav-settings-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(248, 186, 89, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .nav-settings-btn:hover::before {
+        left: 100%;
+    }
+    
+    .nav-settings-btn:hover {
+        transform: translateX(5px);
+        background: rgba(248, 186, 89, 0.15) !important;
+    }
+    
+    .active-settings-BTN {
+        background: rgba(248, 186, 89, 0.3) !important;
+        border-left: 4px solid var(--secondary);
+        transform: translateX(8px);
+        box-shadow: 0 4px 15px rgba(248, 186, 89, 0.3);
+    }
+    
+    .nav-settings-btn i {
+        transition: transform 0.3s ease;
+        width: 20px;
+        text-align: center;
+    }
+    
+    .nav-settings-btn:hover i {
+        transform: scale(1.1);
+    }
+    
+    /* Animation d'entrée pour les éléments */
+    .settings-elements-box {
+        animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Animation pour les cartes de comptes */
+    .accounts-list > * {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .accounts-list > *:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Styles pour le slider personnalisé */
+    .memory-slider {
+        user-select: none;
+        position: relative;
+        height: 60px;
+        background: transparent;
+        border-radius: 0;
+    }
+    
+    .slider-touch-left,
+    .slider-touch-right {
+        z-index: 10;
+        transition: all 0.2s ease;
+        will-change: transform, box-shadow;
+    }
+    
+    .slider-touch-left:hover,
+    .slider-touch-right:hover {
+        box-shadow: 0 0 0 8px rgba(248, 186, 89, 0.2);
+        transform: translateY(-50%) scale(1.15);
+    }
+    
+    .slider-touch-left:active,
+    .slider-touch-right:active {
+        box-shadow: 0 0 0 12px rgba(248, 186, 89, 0.3);
+        transform: translateY(-50%) scale(1.2);
+    }
+    
+    .slider-line span {
+        box-shadow: 0 2px 8px rgba(248, 186, 89, 0.4);
+    }
+    
+    /* Styles pour les boutons actifs */
+    .active-close {
+        background: var(--secondary) !important;
+        color: white !important;
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(248, 186, 89, 0.4);
+    }
+    
     @media (max-width: 768px) {
         .glass-global {
             border-radius: 1rem;
@@ -42,8 +180,24 @@
             margin: 0 !important;
             padding: 1rem !important;
         }
+        .container-settings {
+            transform: translateY(20px);
+        }
+        .container-settings.active-container-settings {
+            transform: translateY(0);
+        }
+        .memory-slider {
+            height: 50px;
+        }
+        
+        .slider-touch-left,
+        .slider-touch-right {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
     }
     </style>
+    
     <!-- Sidebar Navigation -->
     <aside class="nav-settings w-full md:w-64 glass-global shadow-md flex-shrink-0 relative z-10 md:rounded-tr-2xl md:rounded-br-2xl md:rounded-bl-none rounded-b-2xl"
         style="background: linear-gradient(150deg, var(--primary) 0%, var(--secondary-dark) 60%, var(--secondary) 100%);
@@ -52,84 +206,170 @@
         <!-- Filtre noir sur la sidebar -->
         <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55); z-index:1; pointer-events:none;"></div>
         <div class="py-6 px-4 relative z-10">
-            <p class="text-2xl font-semibold text-gray-100 mb-8">Paramètres</p>
+            <p class="text-2xl font-semibold text-gray-100 mb-8 flex items-center gap-3">
+                <i class="bi bi-gear-fill text-[#F8BA59]"></i>
+                Paramètres
+            </p>
             <nav class="nav-box flex flex-col gap-2">
-                <div id="account" class="nav-settings-btn active-settings-BTN px-4 py-2 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-[#F8BA59]/20 text-white">COMPTES</div>
-                <div id="java" class="nav-settings-btn px-4 py-2 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-[#F8BA59]/20 text-white">JAVA</div>
-                <div id="resolution" class="nav-settings-btn px-4 py-2 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-[#F8BA59]/20 text-white">RESOLUTION</div>
-                <div id="launcher" class="nav-settings-btn px-4 py-2 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-[#F8BA59]/20 text-white">LAUNCHER</div>
-                <div id="save" class="nav-settings-btn px-4 py-2 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-[#F8BA59]/20 text-white">ACCUEIL</div>
+                <div id="save" class="nav-settings-btn Z-55 px-4 py-2 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-[#F8BA59]/20 text-white flex items-center gap-3">
+                    <i class="bi bi-house-fill"></i>
+                   ACCUEIL
+                </div>
+                <div id="account" class="nav-settings-btn active-settings-BTN px-4 py-2 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-[#F8BA59]/20 text-white flex items-center gap-3">
+                    <i class="bi bi-person-circle"></i>
+                    COMPTES
+                </div>
+                <div id="java" class="nav-settings-btn z-55 px-4 py-2 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-[#F8BA59]/20 text-white flex items-center gap-3">
+                    <i class="bi bi-cup-hot"></i>
+                    JAVA
+                </div>
+                <div id="resolution" class="nav-settings-btn px-4 py-2 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-[#F8BA59]/20 text-white flex items-center gap-3">
+                    <i class="bi bi-aspect-ratio"></i>
+                   RESOLUTION
+                </div>
+                <div id="launcher" class="nav-settings-btn px-4 py-2 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-[#F8BA59]/20 text-white flex items-center gap-3">
+                    <i class="bi bi-rocket-takeoff"></i>
+                    LAUNCHER
+                </div>
             </nav>
         </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 px-2 md:px-8 py-4 md:py-10 overflow-y-auto space-y-8 glass-global relative z-10 max-w-4xl mx-auto w-full"
-        style="margin:2rem;">
+    <main class="flex-1 px-2 md:px-8 py-4 md:py-10 overflow-y-auto space-y-8 glass-global relative z-10  mx-auto w-[200px]"
+        style="margin:2rem; position: relative; ">
+        
         <!-- Comptes -->
         <section id="account-tab" class="container-settings active-container-settings">
-            <h2 class="text-2xl font-extrabold text-white mb-6">Comptes joueurs</h2>
-            <div class="accounts-list grid gap-6 w-full grid-cols-1 sm:grid-cols-2 ">
+            <h2 class="text-2xl font-extrabold text-white mb-6 flex items-center gap-3">
+                <i class="bi bi-person-circle text-[#F8BA59]"></i>
+                Comptes joueurs
+            </h2>
+            
+            <!-- Grille des comptes -->
+            <div class="accounts-list grid gap-6 w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 <!-- Bouton ajouter un compte -->
-                <button id="add"
-                    class="flex flex-col items-center justify-center gap-3 p-6 bg-[#232323]/80 rounded-2xl border-2 border-dashed border-[#F8BA59] hover:border-[#F8BA59] hover:bg-[#181818]/80 transition cursor-pointer shadow-lg focus:outline-none focus:ring-2 focus:ring-[#F8BA59] min-h-[180px]">
-                    <div class="w-20 h-20 flex items-center justify-center rounded-xl bg-[#181818] border-4 border-[#F8BA59] shadow mb-2">
-                        <span class="icon-account-add text-5xl text-[#F8BA59]"></span>
-                    </div>
-                    <span class="text-[#F8BA59] font-semibold text-lg">Ajouter un compte</span>
-                </button>
-                <!-- Les comptes seront ajoutés ici dynamiquement par JS -->
+                <div id="add" class="account">
+                    <button class="relative w-full h-full flex flex-col items-center justify-center gap-4 p-6 bg-gradient-to-br from-[#232323]/80 to-[#181818]/90 rounded-2xl border-2 border-dashed border-[#F8BA59]/60 hover:border-[#F8BA59] hover:bg-gradient-to-br hover:from-[#181818]/90 hover:to-[#0F0F0F]/95 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-[#F8BA59]/20 hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-[#F8BA59] min-h-[200px] transform hover:scale-105 overflow-hidden">
+                        
+                        <!-- Icône avec animation -->
+                        <div class="relative z-10 w-20 h-20 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#181818] to-[#0F0F0F] border-4 border-[#F8BA59] shadow-lg transition-all duration-300">
+                            <i class="bi bi-person-plus-fill text-4xl text-[#F8BA59] transition-transform duration-300"></i>
+                        </div>
+                        
+                        <!-- Texte -->
+                        <div class="relative z-10 text-center">
+                            <span class="text-[#F8BA59] font-bold text-lg transition-colors duration-300">Ajouter un compte</span>
+                            <p class="text-gray-400 text-sm mt-1">Connectez votre compte Minecraft</p>
+                        </div>
+                    </button>
+                </div>
             </div>
         </section>
+        
         <!-- JAVA -->
-        <section id="java-tab" class="container-settings content-scroll hidden">
-            <div class="titre-tab text-xl font-bold mb-4 text-white">Paramètre de votre RAM</div>
-            <div class="settings-elements-box glass-sidebar rounded-lg shadow p-6 mb-6">
-                <div class="setting-text text-gray-200 mb-4">
-                    Définition de la RAM allouée à votre jeu. Il est recommandé de ne pas dépasser 50% de la RAM totale.<br>
-                    <b>-RAM Maximale:</b> Quantité totale de RAM allouée.<br>
-                    <b>-RAM Minimale:</b> Quantité minimale de RAM au démarrage (max 4Go recommandé).
+        <section id="java-tab" class="container-settings hidden">
+            <!-- Section RAM -->
+            <div class="settings-section mb-8">
+                <div class="titre-tab text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                    <i class="bi bi-memory text-[#F8BA59]"></i>
+                    Gestion de la RAM
                 </div>
-                <div class="settings-elements flex flex-col gap-6 md:flex-row md:items-center md:gap-8">
-                    <!-- Slider RAM moderne -->
-                    <div class="flex flex-col w-full md:w-1/2">
-                        <label for="ram-slider" class="text-white font-semibold mb-2">RAM allouée</label>
-                        <input
-                            id="ram-slider"
-                            type="range"
-                            min="4"
-                            max="16"
-                            step="1"
-                            value="8"
-                            class="w-full accent-[#F8BA59] h-2 rounded-lg appearance-none bg-[#F8BA59]/30 focus:outline-none focus:ring-2 focus:ring-[#F8BA59] transition"
-                        />
-                        <div class="flex justify-between text-xs text-[#F8BA59] mt-1">
-                            <span id="ram-min">4 Go</span>
-                            <span id="ram-value" class="font-bold">8 Go</span>
-                            <span id="ram-max">16 Go</span>
-                        </div>
+                
+                <div class="settings-elements-box glass-sidebar rounded-lg shadow p-6 mb-6">
+                    <div class="setting-text text-gray-200 mb-4">
+                        Définition de la RAM allouée à votre jeu. Il est recommandé de ne pas dépasser 50% de la RAM totale.<br>
+                        <b>-RAM Maximale:</b> Quantité totale de RAM allouée.<br>
+                        <b>-RAM Minimale:</b> Quantité minimale de RAM au démarrage (max 4Go recommandé).
                     </div>
-                    <!-- Infos RAM -->
-                    <div class="ram-info-block text-sm text-white bg-[#232323]/70 rounded-xl p-4 w-full md:w-auto text-center">
-                        <b>Vous possédez un total de <span id="total-ram">0 Go</span> RAM.</b><br>
-                        <b>Disponible : <span id="free-ram">0 Go</span></b>
+                    <div class="settings-elements flex flex-col gap-6 md:flex-row md:items-center md:gap-8">
+                        <!-- Slider RAM moderne -->
+                        <div class="flex flex-col w-full md:w-1/2">
+                            <label for="ram-slider" class="text-white font-semibold mb-2 flex items-center gap-2">
+                                <i class="bi bi-memory text-[#F8BA59]"></i>
+                                RAM allouée
+                            </label>
+                            <input
+                                id="ram-slider"
+                                type="range"
+                                min="2"
+                                max="16"
+                                step="1"
+                                value="8"
+                                class="w-full accent-[#F8BA59] h-2 rounded-lg appearance-none bg-[#F8BA59]/30 focus:outline-none focus:ring-2 focus:ring-[#F8BA59] transition"
+                            />
+                            <div class="flex justify-between text-xs text-[#F8BA59] mt-1">
+                                <span id="ram-min">2 Go</span>
+                                <span id="ram-value" class="font-bold">8 Go</span>
+                                <span id="ram-max">16 Go</span>
+                            </div>
+                        </div>
+                        <!-- Infos RAM -->
+                        <div class="ram-info-block text-sm text-white bg-[#232323]/70 rounded-xl p-4 w-full md:w-auto text-center">
+                            <b>Vous possédez un total de <span id="total-ram">0 Go</span> RAM.</b><br>
+                            <b>Disponible : <span id="free-ram">0 Go</span></b>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="titre-tab text-xl font-bold mb-4 text-white">Emplacement de Java</div>
-            <div class="settings-elements-box glass-sidebar rounded-lg shadow p-6">
-                <div class="setting-text text-gray-200 mb-4">
-                    Le launcher utilise une version embarquée de Java.<br>
-                    Répertoire : <span class="java-path-txt font-mono text-xs"></span><br>
-                    Vous pouvez spécifier un exécutable personnalisé si besoin.
+            <!-- Section Java Path -->
+            <div class="settings-section">
+                <div class="titre-tab text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                    <i class="bi bi-cup-hot text-[#F8BA59]"></i>
+                    Configuration Java
                 </div>
-                <div class="settings-elements content-evenly flex flex-col md:flex-row gap-4 items-center">
-                    <input type="text" class="java-path-input-text w-full md:w-1/2 px-2 py-1 rounded border border-gray-300 bg-gray-50" disabled>
-                    <input type="file" class="java-path-input-file hidden" accept="application/octet-stream" />
-                    <div class="java-path-box flex gap-2">
-                        <div class="java-path-set java-path-btn px-3 py-1 bg-[#F8BA59] text-white rounded cursor-pointer">Changer</div>
-                        <div class="java-path-reset java-path-btn px-3 py-1 bg-gray-300 text-gray-800 rounded cursor-pointer">Par défaut</div>
+                
+                <div class="settings-elements-box glass-sidebar rounded-2xl shadow-xl p-8 border border-[#F8BA59]/20 hover:border-[#F8BA59]/40 transition-all duration-300">
+                    <!-- Description -->
+                    <div class="setting-text text-gray-200 mb-6 p-4 bg-[#1A1A1A]/60 rounded-xl border-l-4 border-[#F8BA59]">
+                        <div class="flex items-start gap-3">
+                            <i class="bi bi-info-circle-fill text-[#F8BA59] text-lg mt-0.5"></i>
+                            <div>
+                                <p class="font-semibold text-white mb-2">Emplacement de Java</p>
+                                <p class="text-sm leading-relaxed">
+                                    Le launcher utilise une version embarquée de Java optimisée pour Minecraft.<br>
+                                    <span class="text-[#F8BA59]">Répertoire par défaut :</span> 
+                                    <code class="java-path-txt bg-[#181818] px-2 py-1 rounded text-xs font-mono text-green-400"></code><br>
+                                    Vous pouvez spécifier un exécutable Java personnalisé si nécessaire.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuration du chemin Java -->
+                    <div class="space-y-6">
+                        <div class="flex flex-col lg:flex-row gap-4 items-end">
+                            <!-- Input du chemin -->
+                            <div class="flex-1">
+                                <label class="block text-white font-semibold mb-2 flex items-center gap-2">
+                                    <i class="bi bi-folder text-[#F8BA59]"></i>
+                                    Chemin vers l'exécutable Java
+                                </label>
+                                <input type="text" 
+                                       class="java-path-input-text w-full px-4 py-3 rounded-xl bg-[#1A1A1A]/80 border border-[#F8BA59]/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#F8BA59] focus:border-transparent transition-all duration-300" 
+                                       placeholder="Chemin vers java.exe"
+                                       disabled>
+                            </div>
+                            
+                            <!-- Input file caché -->
+                            <input type="file" 
+                                   class="java-path-input-file hidden" 
+                                   accept=".exe">
+                        </div>
+
+                        <!-- Boutons d'action -->
+                        <div class="java-path-box flex flex-wrap gap-3">
+                            <button class="java-path-set java-path-btn px-6 py-3 bg-gradient-to-r from-[#F8BA59] to-[#EB843B] text-white rounded-xl font-semibold hover:from-[#EB843B] hover:to-[#D67821] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2">
+                                <i class="bi bi-folder-open"></i>
+                                Parcourir
+                            </button>
+                            
+                            <button class="java-path-reset java-path-btn px-6 py-3 bg-gradient-to-r from-[#6B7280] to-[#4B5563] text-white rounded-xl font-semibold hover:from-[#4B5563] hover:to-[#374151] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                                Réinitialiser
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -137,49 +377,107 @@
 
         <!-- Résolution -->
         <section id="resolution-tab" class="container-settings hidden">
-            <div class="titre-tab text-xl font-bold mb-4 text-white">Paramètres de résolution Minecraft</div>
-            <div class="settings-elements-box glass-sidebar rounded-lg shadow p-6">
-                <div class="setting-text text-gray-200 mb-4">
-                    Définissez une résolution personnalisée. Par défaut : 854x480. Idéal : 1280x720.
-                </div>
-                <div class="settings-elements content-center flex items-center gap-4">
-                    <div class="input-size-element flex items-center gap-2">
-                        <input type="number" class="width-size input-resolution w-20 px-2 py-1 rounded border border-gray-300 bg-gray-50" placeholder="Largeur">
-                        <div class="size-cross text-xl text-gray-400">×</div>
-                        <input type="number" class="height-size input-resolution w-20 px-2 py-1 rounded border border-gray-300 bg-gray-50" placeholder="Hauteur">
+            <div class="titre-tab text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <i class="bi bi-aspect-ratio text-[#F8BA59]"></i>
+                Paramètres de résolution Minecraft
+            </div>
+            <div class="settings-elements-box glass-sidebar rounded-2xl shadow-xl p-8 border border-[#F8BA59]/20 hover:border-[#F8BA59]/40 transition-all duration-300">
+                <div class="setting-text text-gray-200 mb-6 p-4 bg-[#1A1A1A]/60 rounded-xl border-l-4 border-[#F8BA59]">
+                    <div class="flex items-start gap-3">
+                        <i class="bi bi-info-circle-fill text-[#F8BA59] text-lg mt-0.5"></i>
+                        <div>
+                            <p class="font-semibold text-white mb-2">Résolution de jeu</p>
+                            <p class="text-sm leading-relaxed">
+                                Définissez une résolution personnalisée pour Minecraft.<br>
+                                <span class="text-[#F8BA59]">Par défaut :</span> 854x480<br>
+                                <span class="text-[#F8BA59]">Recommandé :</span> 1280x720 ou 1920x1080
+                            </p>
+                        </div>
                     </div>
-                    <div class="size-reset size-btn px-3 py-1 bg-gray-300 text-gray-800 rounded cursor-pointer">Par défaut</div>
+                </div>
+                <div class="settings-elements flex flex-col md:flex-row items-center gap-6">
+                    <div class="input-size-element flex items-center gap-4">
+                        <div class="flex flex-col">
+                            <label class="text-gray-300 text-sm mb-1">Largeur</label>
+                            <input type="number" class="width-size input-resolution w-24 px-3 py-2 rounded-lg bg-[#1A1A1A]/80 border border-[#F8BA59]/30 text-white focus:outline-none focus:ring-2 focus:ring-[#F8BA59]" placeholder="854">
+                        </div>
+                        <div class="size-cross text-2xl text-gray-400 mt-6">×</div>
+                        <div class="flex flex-col">
+                            <label class="text-gray-300 text-sm mb-1">Hauteur</label>
+                            <input type="number" class="height-size input-resolution w-24 px-3 py-2 rounded-lg bg-[#1A1A1A]/80 border border-[#F8BA59]/30 text-white focus:outline-none focus:ring-2 focus:ring-[#F8BA59]" placeholder="480">
+                        </div>
+                    </div>
+                    <button class="size-reset size-btn px-6 py-3 bg-gradient-to-r from-[#6B7280] to-[#4B5563] text-white rounded-xl font-semibold hover:from-[#4B5563] hover:to-[#374151] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                        Par défaut
+                    </button>
                 </div>
             </div>
         </section>
 
         <!-- Launcher -->
-        <section id="launcher-tab" class="container-settings content-scroll hidden space-y-8">
+        <section id="launcher-tab" class="container-settings hidden space-y-8">
             <div>
-                <div class="titre-tab text-xl font-bold mb-4 text-white">Paramètre de téléchargement</div>
-                <div class="settings-elements-box glass-sidebar rounded-lg shadow p-6">
-                    <div class="setting-text text-gray-200 mb-4">
-                        Nombre maximum de fichiers téléchargés simultanément.<br>
-                        Ne pas dépasser la valeur recommandée sauf cas particulier.
+                <div class="titre-tab text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                    <i class="bi bi-download text-[#F8BA59]"></i>
+                    Paramètres de téléchargement
+                </div>
+                <div class="settings-elements-box glass-sidebar rounded-2xl shadow-xl p-8 border border-[#F8BA59]/20 hover:border-[#F8BA59]/40 transition-all duration-300">
+                    <div class="setting-text text-gray-200 mb-6 p-4 bg-[#1A1A1A]/60 rounded-xl border-l-4 border-[#F8BA59]">
+                        <div class="flex items-start gap-3">
+                            <i class="bi bi-info-circle-fill text-[#F8BA59] text-lg mt-0.5"></i>
+                            <div>
+                                <p class="font-semibold text-white mb-2">Téléchargements simultanés</p>
+                                <p class="text-sm leading-relaxed">
+                                    Nombre maximum de fichiers téléchargés en parallèle.<br>
+                                    <span class="text-[#F8BA59]">Recommandé :</span> 5-10 fichiers selon votre connexion
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="settings-elements content-center flex items-center gap-4">
-                        <input type="number" class="max-files input-max-files w-24 px-2 py-1 rounded border border-gray-300 bg-gray-50">
-                        <p class="text-gray-200">Fichiers</p>
-                        <div class="max-files-reset max-files-btn px-3 py-1 bg-gray-300 text-gray-800 rounded cursor-pointer">Par défaut</div>
+                    <div class="settings-elements flex items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <input type="number" class="max-files input-max-files w-20 px-3 py-2 rounded-lg bg-[#1A1A1A]/80 border border-[#F8BA59]/30 text-white focus:outline-none focus:ring-2 focus:ring-[#F8BA59]">
+                            <span class="text-gray-200">Fichiers</span>
+                        </div>
+                        <button class="max-files-reset max-files-btn px-6 py-3 bg-gradient-to-r from-[#6B7280] to-[#4B5563] text-white rounded-xl font-semibold hover:from-[#4B5563] hover:to-[#374151] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                            Par défaut
+                        </button>
                     </div>
                 </div>
             </div>
 
             <div>
-                <div class="titre-tab text-xl font-bold mb-4 text-white">Comportement du launcher au démarrage</div>
-                <div class="settings-elements-box glass-sidebar rounded-lg shadow p-6">
-                    <div class="setting-text text-gray-200 mb-4">
-                        Choisissez le comportement du launcher après le lancement du jeu.
+                <div class="titre-tab text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                    <i class="bi bi-gear-fill text-[#F8BA59]"></i>
+                    Comportement du launcher
+                </div>
+                <div class="settings-elements-box glass-sidebar rounded-2xl shadow-xl p-8 border border-[#F8BA59]/20 hover:border-[#F8BA59]/40 transition-all duration-300">
+                    <div class="setting-text text-gray-200 mb-6 p-4 bg-[#1A1A1A]/60 rounded-xl border-l-4 border-[#F8BA59]">
+                        <div class="flex items-start gap-3">
+                            <i class="bi bi-info-circle-fill text-[#F8BA59] text-lg mt-0.5"></i>
+                            <div>
+                                <p class="font-semibold text-white mb-2">Action après lancement</p>
+                                <p class="text-sm leading-relaxed">
+                                    Choisissez le comportement du launcher après le démarrage du jeu.
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="settings-elements content-evenly close-box flex flex-col md:flex-row gap-4">
-                        <div class="close-launcher close-btn px-4 py-2 rounded bg-[#F8BA59] text-white cursor-pointer">Fermer le launcher après le démarrage du jeu</div>
-                        <div class="close-none close-btn px-4 py-2 rounded bg-gray-300 text-gray-800 cursor-pointer">Garder le launcher ouvert</div>
-                        <div class="close-all close-btn px-4 py-2 rounded bg-red-500 text-white cursor-pointer">Fermer le jeu si le launcher est fermé</div>
+                    <div class="settings-elements close-box flex flex-col md:flex-row gap-4">
+                        <button class="close-launcher close-btn px-6 py-3 rounded-xl bg-[#2A2A2A] text-white font-semibold hover:bg-[#F8BA59] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2">
+                            <i class="bi bi-x-circle"></i>
+                            Fermer le launcher
+                        </button>
+                        <button class="close-none close-btn px-6 py-3 rounded-xl bg-[#2A2A2A] text-white font-semibold hover:bg-[#F8BA59] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2">
+                            <i class="bi bi-window"></i>
+                            Garder ouvert
+                        </button>
+                        <button class="close-all close-btn px-6 py-3 rounded-xl bg-[#2A2A2A] text-white font-semibold hover:bg-[#F8BA59] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2">
+                            <i class="bi bi-power"></i>
+                            Fermer tout
+                        </button>
                     </div>
                 </div>
             </div>
