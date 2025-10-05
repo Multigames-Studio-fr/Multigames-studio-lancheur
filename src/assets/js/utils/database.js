@@ -24,10 +24,27 @@ class database {
             }
 
             const userDataPath = await ipcRenderer.invoke('path-user-data');
-            const dbPath = dev ? `${userDataPath}/../..` : `${userDataPath}/databases`;
+            const os = require('os');
+            const path = require('path');
+            
+            // Optimisation : Stockage dans le dossier spécifique .multigameslauncher
+            let dbPath;
+            if (dev) {
+                // Mode développement : dans le dossier data local
+                dbPath = `${userDataPath}/../..`;
+            } else {
+                // Mode production : dans AppData\Roaming\.multigameslauncher
+                dbPath = path.join(os.homedir(), 'AppData', 'Roaming', '.multigameslauncher');
+                
+                // S'assurer que le dossier existe
+                const fs = require('fs');
+                if (!fs.existsSync(dbPath)) {
+                    fs.mkdirSync(dbPath, { recursive: true });
+                }
+            }
             
             const table = await nodedatabase.intilize({
-                databaseName: 'Databases',
+                databaseName: 'MultiGamesLauncher', // Nom plus spécifique pour la production
                 fileType: dev ? 'sqlite' : 'db',
                 tableName: tableName,
                 path: dbPath,
@@ -36,6 +53,8 @@ class database {
 
             // Mettre en cache
             this.tableCache.set(cacheKey, table);
+            
+            console.log(`📂 Base de données ${tableName} initialisée:`, dbPath);
             return table;
             
         } catch (error) {

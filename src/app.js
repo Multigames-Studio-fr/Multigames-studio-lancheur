@@ -184,6 +184,17 @@ app.on('window-all-closed', () => {
 // Optimisation : Configuration de l'auto-updater avec gestion d'erreurs améliorée
 autoUpdater.autoDownload = false;
 
+// Optimisation : Gestionnaire pour les erreurs du renderer
+ipcMain.on('renderer-error', (event, errorInfo) => {
+    console.error('Erreur du renderer reçue dans le processus principal:', errorInfo);
+    
+    // En mode production, on pourrait aussi envoyer ces erreurs
+    if (process.env.NODE_ENV !== 'dev') {
+        // Log vers un fichier ou service de logging externe
+        console.log('📤 Erreur en production détectée');
+    }
+});
+
 // Gestion améliorée des mises à jour avec retry
 ipcMain.handle('update-app', async () => {
     return await new Promise(async (resolve, reject) => {

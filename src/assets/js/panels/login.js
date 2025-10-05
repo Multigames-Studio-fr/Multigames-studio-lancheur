@@ -193,29 +193,80 @@ class Login {
     }
 
     async saveData(connectionData) {
-        let configClient = await this.db.readData('configClient');
-        let account = await this.db.createData('accounts', connectionData)
-        let instanceSelect = configClient.instance_selct
-        let instancesList = await config.getInstanceList()
-        configClient.account_selected = account.ID;
+        try {
+            // Optimisation : Validation et nettoyage des données de connexion
+            if (!connectionData) {
+                throw new Error('Données de connexion manquantes');
+            }
 
-        for (let instance of instancesList) {
-            if (instance.whitelistActive) {
-                let whitelist = instance.whitelist.find(whitelist => whitelist == account.name)
-                if (whitelist !== account.name) {
-                    if (instance.name == instanceSelect) {
-                        let newInstanceSelect = instancesList.find(i => i.whitelistActive == false)
-                        configClient.instance_selct = newInstanceSelect.name
-                        await setStatus(newInstanceSelect.status)
+            console.log('Sauvegarde des données de connexion:', connectionData);
+
+            // S'assurer que le nom est défini correctement
+            if (!connectionData.name && connectionData.profile?.name) {
+                connectionData.name = connectionData.profile.name;
+            }
+            
+            // Pour les comptes Microsoft, s'assurer que le nom est présent
+            if (connectionData.meta?.type === 'Xbox' && !connectionData.name) {
+                if (connectionData.profile?.name) {
+                    connectionData.name = connectionData.profile.name;
+                } else if (connectionData.username) {
+                    connectionData.name = connectionData.username;
+                } else {
+                    console.warn('Nom de compte Microsoft manquant, utilisation d\'un nom par défaut');
+                    connectionData.name = `Joueur_${Date.now().toString().slice(-6)}`;
+                }
+            }
+
+            let configClient = await this.db.readData('configClient');
+            let account = await this.db.createData('accounts', connectionData);
+            
+            // Correction de la typo
+            let instanceSelect = configClient.instance_select || configClient.instance_selct; // Support ancien format
+            let instancesList = await config.getInstanceList();
+            
+            configClient.account_selected = account.ID;
+
+            // Vérification des whitelists
+            for (let instance of instancesList) {
+                if (instance.whitelistActive) {
+                    let whitelist = instance.whitelist.find(whitelist => whitelist === account.name);
+                    if (whitelist !== account.name) {
+                        if (instance.name === instanceSelect) {
+                            let newInstanceSelect = instancesList.find(i => i.whitelistActive === false);
+                            if (newInstanceSelect) {
+                                configClient.instance_select = newInstanceSelect.name;
+                                await setStatus(newInstanceSelect.status);
+                            }
+                        }
                     }
                 }
             }
-        }
 
-        await this.db.updateData('configClient', configClient);
-        await addAccount(account);
-        await accountSelect(account);
-        changePanel('home');
+            // Nettoyer l'ancienne propriété avec typo si elle existe
+            if (configClient.instance_selct) {
+                configClient.instance_select = configClient.instance_selct;
+                delete configClient.instance_selct;
+            }
+
+            await this.db.updateData('configClient', configClient);
+            await addAccount(account);
+            await accountSelect(account);
+            changePanel('home');
+            
+            console.log('Compte sauvegardé avec succès:', account.name);
+        } catch (error) {
+            console.error('Erreur lors de la sauvegarde des données:', error);
+            
+            // Afficher un message d'erreur à l'utilisateur
+            let popupError = new popup();
+            popupError.openPopup({
+                title: 'Erreur de sauvegarde',
+                content: 'Impossible de sauvegarder le compte. Veuillez réessayer.',
+                color: 'red',
+                options: true
+            });
+        }
     }
 }
 export default Login;

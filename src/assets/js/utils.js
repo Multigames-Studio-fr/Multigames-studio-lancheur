@@ -50,24 +50,57 @@ async function appdata() {
 }
 
 async function addAccount(data) {
-    // Skin à gauche, infos à droite, style Tailwind moderne
-    let skinUrl = `https://mc-heads.net/avatar/${data.name}`;
-    let div = document.createElement("div");
-    div.className = "account flex items-center justify-between gap-4 p-4 bg-[#181818]/60 rounded-2xl shadow-lg glass-sidebar transition hover:scale-105 hover:shadow-2xl w-full";
-    div.id = data.ID;
-    div.innerHTML = `
-        <div class="w-20 h-20 rounded-xl overflow-hidden border-4 border-[#F8BA59] shadow bg-[#232323] flex-shrink-0">
-            <img src="${skinUrl}" alt="Skin ${data.name}" class="w-full h-full object-cover" draggable="false" />
-        </div>
-        <div class="flex flex-col flex-1 min-w-0 ml-4">
-            <div class="profile-pseudo text-[#F8BA59] font-bold text-lg truncate">${data.name}</div>
+    try {
+        // Optimisation : Validation des données du compte
+        if (!data || !data.name) {
+            console.error('Données de compte invalides:', data);
+            return null;
+        }
 
-            <button class="delete-profile mt-3 px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-xs font-semibold transition w-max" id="${data.ID}">
-                <span class="icon-account-delete delete-profile-icon align-middle"></span> Supprimer
-            </button>
-        </div>
-    `;
-    return document.querySelector('.accounts-list').appendChild(div);
+        // Utiliser le nom correct selon le type de compte
+        let accountName = data.name;
+        
+        // Pour les comptes Microsoft, vérifier différentes propriétés possibles
+        if (data.meta && data.meta.type === 'Xbox') {
+            accountName = data.name || data.profile?.name || data.username || 'Compte Microsoft';
+        }
+        
+        // S'assurer qu'on a un nom valide
+        if (!accountName || accountName === 'undefined' || accountName === undefined) {
+            accountName = data.profile?.name || data.username || `Compte ${data.meta?.type || 'Inconnu'}`;
+        }
+
+        console.log('Ajout du compte:', accountName, 'Type:', data.meta?.type);
+
+        // Skin à gauche, infos à droite, style Tailwind moderne
+        let skinUrl = `https://mc-heads.net/avatar/${accountName}`;
+        let div = document.createElement("div");
+        div.className = "account flex items-center justify-between gap-4 p-4 bg-[#181818]/60 rounded-2xl shadow-lg glass-sidebar transition hover:scale-105 hover:shadow-2xl w-full";
+        div.id = data.ID;
+        div.innerHTML = `
+            <div class="w-20 h-20 rounded-xl overflow-hidden border-4 border-[#F8BA59] shadow bg-[#232323] flex-shrink-0">
+                <img src="${skinUrl}" alt="Skin ${accountName}" class="w-full h-full object-cover" draggable="false" onerror="this.src='./assets/images/default/setve.png'" />
+            </div>
+            <div class="flex flex-col flex-1 min-w-0 ml-4">
+                <div class="profile-pseudo text-[#F8BA59] font-bold text-lg truncate">${accountName}</div>
+                <div class="profile-type text-gray-400 text-sm">${data.meta?.type || 'Type inconnu'}</div>
+                <button class="delete-profile mt-3 px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-xs font-semibold transition w-max" id="${data.ID}">
+                    <span class="icon-account-delete delete-profile-icon align-middle"></span> Supprimer
+                </button>
+            </div>
+        `;
+        
+        const accountsList = document.querySelector('.accounts-list');
+        if (accountsList) {
+            return accountsList.appendChild(div);
+        } else {
+            console.error('Element .accounts-list non trouvé');
+            return null;
+        }
+    } catch (error) {
+        console.error('Erreur lors de l\'ajout du compte:', error);
+        return null;
+    }
 }
 
 async function accountSelect(data) {

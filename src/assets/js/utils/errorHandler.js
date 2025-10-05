@@ -1,7 +1,9 @@
 /**
  * @author Optimisation
- * Gestionnaire d'erreurs centralisé et amélioré
+ * Gestionnaire d'erreurs centralisé et amélioré avec rapport Discord
  */
+
+import errorReporter from './errorReporter.js';
 
 class ErrorHandler {
     constructor() {
@@ -75,8 +77,39 @@ class ErrorHandler {
             }
         }
 
+        // Optimisation : Envoyer automatiquement le rapport d'erreur vers Discord
+        if (this.shouldReportError(errorInfo)) {
+            errorReporter.reportError(errorInfo).catch(err => {
+                console.warn('Impossible d\'envoyer le rapport d\'erreur:', err);
+            });
+        }
+
         // Actions spécifiques selon le type d'erreur
         this.handleSpecificError(errorInfo);
+    }
+
+    shouldReportError(errorInfo) {
+        // Ne pas reporter certains types d'erreurs mineures
+        const minorErrors = [
+            'Resource Error', // Images manquantes, etc.
+            'Network Error'   // Problèmes de réseau temporaires
+        ];
+
+        // Ne pas reporter les erreurs trop fréquentes
+        if (minorErrors.includes(errorInfo.type)) {
+            return false;
+        }
+
+        // Reporter les erreurs importantes
+        const criticalErrors = [
+            'JavaScript Error',
+            'Unhandled Promise Rejection',
+            'Launcher Initialization Error',
+            'Main Process Error',
+            'Authentication Error'
+        ];
+
+        return criticalErrors.includes(errorInfo.type);
     }
 
     handleSpecificError(errorInfo) {

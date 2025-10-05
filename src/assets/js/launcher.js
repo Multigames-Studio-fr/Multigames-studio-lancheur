@@ -14,6 +14,10 @@ const { AZauth, Microsoft, Mojang } = require('minecraft-java-core');
 // Optimisations imports
 import performanceOptimizer from './utils/performance.js';
 import errorHandler from './utils/errorHandler.js';
+import accountDiagnostic from './utils/accountDiagnostic.js';
+import errorReporter from './utils/errorReporter.js';
+import debugUtils from './utils/debugUtils.js';
+import { initializeDatabaseMigration } from './utils/databaseMigration.js';
 
 // libs
 const { ipcRenderer } = require('electron');
@@ -36,6 +40,13 @@ class Launcher {
             
             // Activer les optimisations automatiques
             performanceOptimizer.enableAutoOptimizations();
+            
+            // Migration automatique de la base de données
+            console.log('🔄 Vérification de la migration de base de données...');
+            const migrationResult = await initializeDatabaseMigration();
+            if (migrationResult.success && migrationResult.migrated) {
+                console.log('✅ Base de données migrée vers C:\\Users\\wiltark\\AppData\\Roaming\\.multigameslauncher');
+            }
             
             this.initLog();
             console.log('Initializing Launcher...');
@@ -274,6 +285,11 @@ class Launcher {
             if (accounts?.length) {
                 console.log(`Vérification de ${accounts.length} compte(s)...`);
                 
+                // Optimisation : Diagnostic des comptes avant traitement
+                if (process.env.NODE_ENV === 'dev') {
+                    await accountDiagnostic.diagnoseAllAccounts(this.db);
+                }
+                
                 // Optimisation : Traitement en parallèle des comptes avec limite
                 const accountPromises = accounts.map(account => this.processAccount(account, account_selected, configClient, popupRefresh));
                 await Promise.allSettled(accountPromises);
@@ -347,30 +363,52 @@ class Launcher {
     }
 
     async processXboxAccount(account, account_ID, account_selected, configClient, popupRefresh) {
-        console.log(`Account Type: ${account.meta.type} | Username: ${account.name}`);
+        console.log(`Account Type: ${account.meta.type} | Username: ${account.name || 'Nom manquant'}`);
         popupRefresh.openPopup({
             title: 'Connexion',
-            content: `Vérification du compte Xbox: ${account.name}`,
+            content: `Vérification du compte Xbox: ${account.name || 'Compte Microsoft'}`,
             color: 'var(--color)',
             background: false
         });
 
-        const refresh_accounts = await new Microsoft(this.config.client_id).refresh(account);
+        try {
+            const refresh_accounts = await new Microsoft(this.config.client_id).refresh(account);
 
-        if (refresh_accounts.error) {
+            if (refresh_accounts.error) {
+                console.error(`[Account] ${account.name}: ${refresh_accounts.errorMessage}`);
+                await this.db.deleteData('accounts', account_ID);
+                if (account_ID === account_selected) {
+                    configClient.account_selected = null;
+                    await this.db.updateData('configClient', configClient);
+                }
+                return;
+            }
+
+            // Optimisation : S'assurer que le nom est correct
+            if (!refresh_accounts.name && refresh_accounts.profile?.name) {
+                refresh_accounts.name = refresh_accounts.profile.name;
+            }
+            
+            // Validation finale du nom
+            if (!refresh_accounts.name || refresh_accounts.name === 'undefined') {
+                refresh_accounts.name = account.name || `Joueur_${Date.now().toString().slice(-6)}`;
+                console.warn('Nom de compte Microsoft corrigé:', refresh_accounts.name);
+            }
+
+            refresh_accounts.ID = account_ID;
+            await this.db.updateData('accounts', refresh_accounts, account_ID);
+            await addAccount(refresh_accounts);
+            if (account_ID === account_selected) await accountSelect(refresh_accounts);
+            
+            console.log('Compte Xbox rafraîchi avec succès:', refresh_accounts.name);
+        } catch (error) {
+            console.error('Erreur lors du rafraîchissement du compte Xbox:', error);
             await this.db.deleteData('accounts', account_ID);
             if (account_ID === account_selected) {
                 configClient.account_selected = null;
                 await this.db.updateData('configClient', configClient);
             }
-            console.error(`[Account] ${account.name}: ${refresh_accounts.errorMessage}`);
-            return;
         }
-
-        refresh_accounts.ID = account_ID;
-        await this.db.updateData('accounts', refresh_accounts, account_ID);
-        await addAccount(refresh_accounts);
-        if (account_ID === account_selected) await accountSelect(refresh_accounts);
     }
 
     async processAZauthAccount(account, account_ID, account_selected, configClient, popupRefresh) {
@@ -435,6 +473,87 @@ class Launcher {
         await addAccount(refresh_accounts);
         if (account_ID === account_selected) await accountSelect(refresh_accounts);
     }
+}
+
+// Optimisation : Ajout de fonctions de diagnostic globales pour le développement
+if (typeof window !== 'undefined') {
+    window.launcherDiagnostic = {
+        async diagnoseAccounts() {
+            const launcher = new Launcher();
+            launcher.db = new database();
+            return await accountDiagnostic.diagnoseAllAccounts(launcher.db);
+        },
+        
+        async fixAccounts() {
+            const launcher = new Launcher();
+            launcher.db = new database();
+            const accounts = await launcher.db.readAllData('accounts');
+            
+            for (const account of accounts) {
+                const fixResult = await accountDiagnostic.fixAccount(account);
+                if (fixResult.wasFixed) {
+                    await launcher.db.updateData('accounts', fixResult.fixed, account.ID);
+                    console.log('✅ Compte réparé:', fixResult.fixed.name);
+                }
+            }
+            
+            console.log('🎉 Réparation terminée');
+        },
+        
+        async clearBrokenAccounts() {
+            const launcher = new Launcher();
+            launcher.db = new database();
+            const accounts = await launcher.db.readAllData('accounts');
+            
+            for (const account of accounts) {
+                const diagnostic = await accountDiagnostic.diagnoseAccount(account);
+                if (!diagnostic.isValid) {
+                    await launcher.db.deleteData('accounts', account.ID);
+                    console.log('🗑️ Compte supprimé:', account.ID);
+                }
+            }
+            
+            console.log('🧹 Nettoyage terminé');
+        },
+
+        // Nouvelles fonctions pour le rapport d'erreurs Discord
+        async testErrorReport() {
+            console.log('🧪 Test du système de rapport d\'erreurs...');
+            await errorReporter.testReport();
+        },
+
+        resetErrorReportConsent() {
+            errorReporter.resetConsent();
+            console.log('✅ Consentement de rapport d\'erreurs réinitialisé');
+        },
+
+        getErrorReportStatus() {
+            const status = errorReporter.getStatus();
+            console.log('� Statut du rapport d\'erreurs:', status);
+            return status;
+        },
+
+        async sendManualReport(description) {
+            const manualError = {
+                type: 'Manual Report',
+                message: description || 'Rapport manuel envoyé par l\'utilisateur',
+                timestamp: new Date().toISOString(),
+                error: new Error('Manual report')
+            };
+            
+            await errorReporter.reportError(manualError);
+            console.log('📤 Rapport manuel envoyé');
+        }
+    };
+    
+    console.log('�🔧 Fonctions de diagnostic disponibles:');
+    console.log('- launcherDiagnostic.diagnoseAccounts() : Diagnostiquer tous les comptes');
+    console.log('- launcherDiagnostic.fixAccounts() : Réparer les comptes');
+    console.log('- launcherDiagnostic.clearBrokenAccounts() : Supprimer les comptes cassés');
+    console.log('- launcherDiagnostic.testErrorReport() : Tester le rapport d\'erreurs Discord');
+    console.log('- launcherDiagnostic.resetErrorReportConsent() : Réinitialiser le consentement');
+    console.log('- launcherDiagnostic.getErrorReportStatus() : Voir le statut');
+    console.log('- launcherDiagnostic.sendManualReport("description") : Envoyer un rapport manuel');
 }
 
 new Launcher().init();
