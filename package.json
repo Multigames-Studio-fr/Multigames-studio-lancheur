@@ -1,7 +1,7 @@
 {
     "name": "multigames-studio-launcher",
     "productName": "MultiGames Studio Launcher",
-    "version": "1.3.0",
+    "version": "1.3.1",
     "description": "Launcher Minecraft pour le serveur MultiGames-Studio",
     "main": "src/app.js",
     "author": {
