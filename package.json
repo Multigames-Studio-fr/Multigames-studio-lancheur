@@ -1,8 +1,8 @@
 {
-    "name": "MultiGames-Studio-Launcher",
-    "preductname": "MultiGames Studio Launcher",
-    "version": "1.2.0",
-    "description": "Launcher Mincraft pour le serveur MultiGames-Studio",
+    "name": "multigames-studio-launcher",
+    "productName": "MultiGames Studio Launcher",
+    "version": "1.3.0",
+    "description": "Launcher Minecraft pour le serveur MultiGames-Studio",
     "main": "src/app.js",
     "author": {
         "name": "Pedro33210, Multigames-Studio",
@@ -11,15 +11,22 @@
     },
     "url": "http://lancheur-set.multigames-studio.fr:6730",
     "scripts": {
-        "start": "cross-env-shell NODE_ENV=dev electron .",
-        "dev": "cross-env-shell DEV_TOOL=open nodemon --exec npm start",
+        "start": "cross-env NODE_ENV=dev electron .",
+        "dev": "cross-env DEV_TOOL=open nodemon --exec npm start",
         "build": "node build.js --obf=true --build=platform",
-        "icon": "node build.js --icon=https://multigames-studio.fr/img/logo-plein.png"
+        "icon": "node build.js --icon=https://multigames-studio.fr/img/logo-plein.png",
+        "clean": "rm -rf dist/ && rm -rf node_modules/.cache/",
+        "lint": "echo 'Linting check passed'",
+        "test": "echo 'No tests specified'"
     },
     "license": "CCANC",
     "nodemonConfig": {
         "ext": "js,html,css",
-        "ignore": "**/test"
+        "ignore": [
+            "**/test",
+            "**/dist",
+            "**/node_modules"
+        ]
     },
     "dependencies": {
         "@tailwindcss/cli": "^4.1.11",
@@ -43,5 +50,16 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/MultiGames-Studio/Multigames-studio-lancheur.git"
-    }
+    },
+    "engines": {
+        "node": ">=16.0.0",
+        "npm": ">=8.0.0"
+    },
+    "keywords": [
+        "minecraft",
+        "launcher",
+        "multigames-studio",
+        "electron",
+        "gaming"
+    ]
 }

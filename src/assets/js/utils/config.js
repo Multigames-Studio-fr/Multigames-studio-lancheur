@@ -17,76 +17,168 @@ const RSS_DEV = 'http://localhost:3000/api/news/rss.xml';
 let defaultRss = (process.env.NODE_ENV === 'dev') ? RSS_DEV : RSS_PROD;
 
 class Config {
-    GetConfig() {
-        return new Promise((resolve, reject) => {
-            nodeFetch(config).then(async config => {
-                if (config.status === 200) return resolve(config.json());
-                else return reject({ error: { code: config.statusText, message: 'server not accessible' } });
-            }).catch(error => {
-                return reject({ error });
-            })
-        })
+    constructor() {
+        // Optimisation : Cache pour éviter les requêtes répétées
+        this.configCache = null;
+        this.configCacheTime = 0;
+        this.CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+    }
+
+    async GetConfig() {
+        try {
+            // Optimisation : Utiliser le cache si encore valide
+            const now = Date.now();
+            if (this.configCache && (now - this.configCacheTime) < this.CACHE_DURATION) {
+                return this.configCache;
+            }
+
+            const response = await nodeFetch(config, {
+                timeout: 10000, // Timeout de 10 secondes
+                headers: {
+                    'User-Agent': `${pkg.name}/${pkg.version}`,
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (response.status === 200) {
+                const configData = await response.json();
+                
+                // Mise à jour du cache
+                this.configCache = configData;
+                this.configCacheTime = now;
+                
+                return configData;
+            } else {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement de la configuration:', error);
+            
+            // Retourner le cache si disponible en cas d'erreur
+            if (this.configCache) {
+                console.warn('Utilisation de la configuration en cache');
+                return this.configCache;
+            }
+            
+            throw { 
+                error: { 
+                    code: error.code || 'CONFIG_ERROR', 
+                    message: error.message || 'Impossible de charger la configuration'
+                } 
+            };
+        }
     }
 
     async getInstanceList() {
-        let urlInstance = `${url}/files`
-        let instances = await nodeFetch(urlInstance).then(res => res.json()).catch(err => err)
-        let instancesList = []
-        instances = Object.entries(instances)
+        try {
+            const urlInstance = `${url}/files`;
+            const response = await nodeFetch(urlInstance, {
+                timeout: 15000,
+                headers: {
+                    'User-Agent': `${pkg.name}/${pkg.version}`,
+                    'Accept': 'application/json'
+                }
+            });
 
-        for (let [name, data] of instances) {
-            let instance = data
-            instance.name = name
-            instancesList.push(instance)
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const instances = await response.json();
+            const instancesList = [];
+            const instanceEntries = Object.entries(instances);
+
+            for (const [name, data] of instanceEntries) {
+                const instance = { ...data };
+                instance.name = name;
+                instancesList.push(instance);
+            }
+
+            return instancesList;
+        } catch (error) {
+            console.error('Erreur lors du chargement de la liste des instances:', error);
+            return []; // Retourner une liste vide en cas d'erreur
         }
-        return instancesList
     }
 
     async getNews() {
-        let cfg = await this.GetConfig() || {};
-
-        // priorité : cfg.rss (remote config) -> defaultRss -> json fallback
-        const rssUrl = cfg.rss || defaultRss;
-        const jsonUrl = cfg.news || news;
-
-        // try RSS first
         try {
-            const res = await nodeFetch(rssUrl);
-            if (res.status === 200) {
-                const text = await res.text();
-                let items = (JSON.parse(convert.xml2json(text, { compact: true })))?.rss?.channel?.item || [];
-                if (!Array.isArray(items)) items = [items];
+            const cfg = await this.GetConfig().catch(() => ({}));
 
-                const parsed = items.map(item => ({
-                    title: item.title?._text || '',
-                    content: (item['content:encoded']?._text) || (item.description?._text) || '',
-                    author: item['dc:creator']?._text || null,
-                    publish_date: item.pubDate?._text || ''
-                }));
-                // Return only the latest item (first entry) to keep API simple
-                return parsed && parsed.length ? parsed[0] : null;
-            }
-        } catch (err) {
-            // ignore and try JSON fallback
-        }
+            // Priorité : cfg.rss (config distant) -> defaultRss -> json fallback
+            const rssUrl = cfg.rss || defaultRss;
+            const jsonUrl = cfg.news || news;
 
-        // fallback to JSON endpoint
-        return new Promise((resolve, reject) => { 
-            nodeFetch(jsonUrl).then(async res => {
-                if (res.status === 200) {
-                    const json = await res.json().catch(() => null);
-                    // If endpoint returns an array, return the first (latest) element
-                    if (Array.isArray(json)) return resolve(json.length ? json[0] : null);
-                    // If the JSON contains an items array: try that
-                    if (json && Array.isArray(json.items)) return resolve(json.items.length ? json.items[0] : null);
-                    // otherwise return the object as-is
-                    return resolve(json);
+            // Essayer RSS en premier
+            try {
+                const rssResponse = await nodeFetch(rssUrl, {
+                    timeout: 10000,
+                    headers: {
+                        'User-Agent': `${pkg.name}/${pkg.version}`,
+                        'Accept': 'application/rss+xml, application/xml, text/xml'
+                    }
+                });
+
+                if (rssResponse.ok) {
+                    const text = await rssResponse.text();
+                    const jsonData = JSON.parse(convert.xml2json(text, { compact: true }));
+                    let items = jsonData?.rss?.channel?.item || [];
+                    
+                    if (!Array.isArray(items)) items = [items];
+
+                    if (items.length > 0) {
+                        const parsed = items.map(item => ({
+                            title: item.title?._text || '',
+                            content: (item['content:encoded']?._text) || (item.description?._text) || '',
+                            author: item['dc:creator']?._text || null,
+                            publish_date: item.pubDate?._text || ''
+                        }));
+                        
+                        // Retourner le premier élément (le plus récent)
+                        return parsed[0] || null;
+                    }
                 }
-                else return reject({ error: { code: res.statusText, message: 'server not accessible' } });
-            }).catch(error => {
-                return reject({ error });
-            });
-        });
+            } catch (rssError) {
+                console.warn('Erreur RSS, tentative JSON:', rssError.message);
+            }
+
+            // Fallback vers l'endpoint JSON
+            try {
+                const jsonResponse = await nodeFetch(jsonUrl, {
+                    timeout: 10000,
+                    headers: {
+                        'User-Agent': `${pkg.name}/${pkg.version}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (jsonResponse.ok) {
+                    const json = await jsonResponse.json();
+                    
+                    // Si l'endpoint retourne un tableau, retourner le premier élément
+                    if (Array.isArray(json)) {
+                        return json.length ? json[0] : null;
+                    }
+                    
+                    // Si le JSON contient un tableau items
+                    if (json && Array.isArray(json.items)) {
+                        return json.items.length ? json.items[0] : null;
+                    }
+                    
+                    // Sinon retourner l'objet tel quel
+                    return json;
+                }
+            } catch (jsonError) {
+                console.warn('Erreur JSON:', jsonError.message);
+            }
+
+            // Aucune source de news disponible
+            return null;
+            
+        } catch (error) {
+            console.error('Erreur lors du chargement des news:', error);
+            return null;
+        }
     }
 }
 

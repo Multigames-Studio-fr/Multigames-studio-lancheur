@@ -128,56 +128,106 @@ class Settings {
     }
 
     async ram() {
-        let config = await this.db.readData('configClient');
-        let totalMem = Math.trunc(os.totalmem() / 1073741824 * 10) / 10;
-        let freeMem = Math.trunc(os.freemem() / 1073741824 * 10) / 10;
-
-        // Mettre à jour les informations système
-        document.getElementById("total-ram").textContent = `${totalMem} Go`;
-        document.getElementById("free-ram").textContent = `${freeMem} Go`;
-
-        // Configuration de la RAM
-        let ram = config?.java_config?.java_memory ? {
-            ramValue: config.java_config.java_memory.max || 8
-        } : { ramValue: 8 };
-
-        // Définir les limites du slider
-        let maxRam = Math.trunc((50 * totalMem) / 100); // 50% de la RAM totale
-        let ramSlider = document.getElementById("ram-slider");
-        let ramValue = document.getElementById("ram-value");
-        let ramMin = document.getElementById("ram-min");
-        let ramMax = document.getElementById("ram-max");
-
-        // Configurer le slider
-        ramSlider.max = maxRam;
-        ramSlider.value = ram.ramValue;
-        ramMax.textContent = `${maxRam} Go`;
-        ramValue.textContent = `${ram.ramValue} Go`;
-
-        // Vérifier que la valeur actuelle ne dépasse pas la limite
-        if (ram.ramValue > maxRam) {
-            ram.ramValue = maxRam;
-            ramSlider.value = maxRam;
-            ramValue.textContent = `${maxRam} Go`;
-        }
-
-        // Gestionnaire d'événement pour le changement de valeur
-        ramSlider.addEventListener('input', async (e) => {
-            let newValue = parseInt(e.target.value);
-            ramValue.textContent = `${newValue} Go`;
+        try {
+            const config = await this.db.readData('configClient');
             
-            // Sauvegarder la configuration
-            let config = await this.db.readData('configClient');
-            if (!config.java_config) config.java_config = {};
-            if (!config.java_config.java_memory) config.java_config.java_memory = {};
+            // Optimisation : Calcul plus précis de la mémoire
+            const totalMem = Math.round((os.totalmem() / (1024 ** 3)) * 10) / 10;
+            const freeMem = Math.round((os.freemem() / (1024 ** 3)) * 10) / 10;
+
+            // Mettre à jour les informations système
+            const totalRamElement = document.getElementById("total-ram");
+            const freeRamElement = document.getElementById("free-ram");
             
-            config.java_config.java_memory = {
-                min: Math.min(2, newValue), // RAM min = 2 Go ou la valeur choisie si elle est inférieure
-                max: newValue
+            if (totalRamElement) totalRamElement.textContent = `${totalMem} Go`;
+            if (freeRamElement) freeRamElement.textContent = `${freeMem} Go`;
+
+            // Configuration de la RAM avec valeurs par défaut sécurisées
+            const currentRamValue = config?.java_config?.java_memory?.max || Math.min(8, Math.floor(totalMem * 0.5));
+
+            // Optimisation : Limites plus intelligentes
+            const minRam = 2;
+            const maxRam = Math.min(Math.floor(totalMem * 0.75), 32); // 75% de la RAM ou 32GB max
+            const recommendedRam = Math.min(Math.floor(totalMem * 0.5), 16); // 50% ou 16GB max
+
+            const ramSlider = document.getElementById("ram-slider");
+            const ramValue = document.getElementById("ram-value");
+            const ramMin = document.getElementById("ram-min");
+            const ramMax = document.getElementById("ram-max");
+
+            if (!ramSlider || !ramValue || !ramMin || !ramMax) {
+                console.warn('Éléments de RAM manquants dans le DOM');
+                return;
+            }
+
+            // Configurer le slider avec des valeurs sécurisées
+            ramSlider.min = minRam;
+            ramSlider.max = maxRam;
+            ramSlider.value = Math.min(Math.max(currentRamValue, minRam), maxRam);
+            
+            ramMin.textContent = `${minRam} Go`;
+            ramMax.textContent = `${maxRam} Go`;
+            ramValue.textContent = `${ramSlider.value} Go`;
+
+            // Ajouter une indication de valeur recommandée
+            const recommendedIndicator = document.createElement('span');
+            recommendedIndicator.textContent = ` (Recommandé: ${recommendedRam} Go)`;
+            recommendedIndicator.style.color = '#F8BA59';
+            recommendedIndicator.style.fontSize = '0.8em';
+            
+            // Nettoyer les anciens indicateurs
+            const existingIndicator = ramValue.parentNode.querySelector('.recommended-indicator');
+            if (existingIndicator) existingIndicator.remove();
+            
+            recommendedIndicator.className = 'recommended-indicator';
+            ramValue.parentNode.appendChild(recommendedIndicator);
+
+            // Optimisation : Debounce pour éviter trop de sauvegardes
+            let saveTimeout;
+            const debouncedSave = async (newValue) => {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(async () => {
+                    try {
+                        let config = await this.db.readData('configClient');
+                        if (!config.java_config) config.java_config = {};
+                        if (!config.java_config.java_memory) config.java_config.java_memory = {};
+                        
+                        config.java_config.java_memory = {
+                            min: Math.min(minRam, newValue),
+                            max: newValue
+                        };
+                        
+                        await this.db.updateData('configClient', config);
+                        console.log(`RAM mise à jour: ${newValue} Go`);
+                    } catch (error) {
+                        console.error('Erreur lors de la sauvegarde de la RAM:', error);
+                    }
+                }, 500); // 500ms de délai
+            };
+
+            // Gestionnaire d'événement optimisé
+            ramSlider.removeEventListener('input', this.ramInputHandler); // Nettoyer l'ancien
+            this.ramInputHandler = (e) => {
+                const newValue = parseInt(e.target.value);
+                ramValue.textContent = `${newValue} Go`;
+                
+                // Indication visuelle de la qualité du choix
+                if (newValue <= recommendedRam) {
+                    ramValue.style.color = '#4ade80'; // Vert
+                } else if (newValue <= maxRam * 0.9) {
+                    ramValue.style.color = '#f59e0b'; // Orange
+                } else {
+                    ramValue.style.color = '#ef4444'; // Rouge
+                }
+                
+                debouncedSave(newValue);
             };
             
-            await this.db.updateData('configClient', config);
-        });
+            ramSlider.addEventListener('input', this.ramInputHandler);
+
+        } catch (error) {
+            console.error('Erreur lors de la configuration de la RAM:', error);
+        }
     }
 
     async javaPath() {
@@ -250,60 +300,157 @@ class Settings {
     }
 
     async launcher() {
-        let configClient = await this.db.readData('configClient');
+        try {
+            const configClient = await this.db.readData('configClient');
 
-        let maxDownloadFiles = configClient?.launcher_config?.download_multi || 5;
-        let maxDownloadFilesInput = document.querySelector(".max-files");
-        let maxDownloadFilesReset = document.querySelector(".max-files-reset");
-        maxDownloadFilesInput.value = maxDownloadFiles;
+            // Optimisation : Gestion améliorée des téléchargements multiples
+            const currentDownloadFiles = configClient?.launcher_config?.download_multi || 5;
+            const maxDownloadFilesInput = document.querySelector(".max-files");
+            const maxDownloadFilesReset = document.querySelector(".max-files-reset");
 
-        maxDownloadFilesInput.addEventListener("change", async () => {
-            let configClient = await this.db.readData('configClient')
-            configClient.launcher_config.download_multi = maxDownloadFilesInput.value;
-            await this.db.updateData('configClient', configClient);
-        })
-
-        maxDownloadFilesReset.addEventListener("click", async () => {
-            let configClient = await this.db.readData('configClient')
-            maxDownloadFilesInput.value = 50
-            configClient.launcher_config.download_multi = 50;
-            await this.db.updateData('configClient', configClient);
-        })
-
-        let closeBox = document.querySelector(".close-box");
-        let closeLauncher = configClient?.launcher_config?.closeLauncher || "close-launcher";
-
-        if (closeLauncher == "close-launcher") {
-            document.querySelector('.close-launcher').classList.add('active-close');
-        } else if (closeLauncher == "close-all") {
-            document.querySelector('.close-all').classList.add('active-close');
-        } else if (closeLauncher == "close-none") {
-            document.querySelector('.close-none').classList.add('active-close');
-        }
-
-        closeBox.addEventListener("click", async e => {
-            if (e.target.classList.contains('close-btn')) {
-                let activeClose = document.querySelector('.active-close');
-                if (e.target.classList.contains('active-close')) return
-                activeClose?.classList.toggle('active-close');
-
-                let configClient = await this.db.readData('configClient')
-
-                if (e.target.classList.contains('close-launcher')) {
-                    e.target.classList.toggle('active-close');
-                    configClient.launcher_config.closeLauncher = "close-launcher";
-                    await this.db.updateData('configClient', configClient);
-                } else if (e.target.classList.contains('close-all')) {
-                    e.target.classList.toggle('active-close');
-                    configClient.launcher_config.closeLauncher = "close-all";
-                    await this.db.updateData('configClient', configClient);
-                } else if (e.target.classList.contains('close-none')) {
-                    e.target.classList.toggle('active-close');
-                    configClient.launcher_config.closeLauncher = "close-none";
-                    await this.db.updateData('configClient', configClient);
-                }
+            if (!maxDownloadFilesInput || !maxDownloadFilesReset) {
+                console.warn('Éléments de configuration des téléchargements manquants');
+                return;
             }
-        })
+
+            // Validation et limites intelligentes
+            const minFiles = 1;
+            const maxFiles = 20; // Limiter pour éviter la surcharge
+            const recommendedFiles = 5;
+
+            maxDownloadFilesInput.value = Math.min(Math.max(currentDownloadFiles, minFiles), maxFiles);
+            maxDownloadFilesInput.min = minFiles;
+            maxDownloadFilesInput.max = maxFiles;
+
+            // Ajout d'une indication
+            const helpText = document.createElement('small');
+            helpText.textContent = `Recommandé: ${recommendedFiles} fichiers. Plus élevé = plus rapide mais plus de charge réseau.`;
+            helpText.style.color = '#888';
+            helpText.style.display = 'block';
+            helpText.style.marginTop = '5px';
+            
+            // Nettoyer les anciens textes d'aide
+            const existingHelp = maxDownloadFilesInput.parentNode.querySelector('.download-help');
+            if (existingHelp) existingHelp.remove();
+            
+            helpText.className = 'download-help';
+            maxDownloadFilesInput.parentNode.appendChild(helpText);
+
+            // Optimisation : Debounce pour les changements
+            let changeTimeout;
+            const debouncedSave = async (value) => {
+                clearTimeout(changeTimeout);
+                changeTimeout = setTimeout(async () => {
+                    try {
+                        const validValue = Math.min(Math.max(parseInt(value), minFiles), maxFiles);
+                        
+                        let configClient = await this.db.readData('configClient');
+                        if (!configClient.launcher_config) configClient.launcher_config = {};
+                        
+                        configClient.launcher_config.download_multi = validValue;
+                        await this.db.updateData('configClient', configClient);
+                        
+                        maxDownloadFilesInput.value = validValue; // Corriger la valeur si nécessaire
+                        console.log(`Téléchargements multiples mis à jour: ${validValue}`);
+                    } catch (error) {
+                        console.error('Erreur lors de la sauvegarde des téléchargements multiples:', error);
+                    }
+                }, 300);
+            };
+
+            // Nettoyer les anciens listeners
+            maxDownloadFilesInput.removeEventListener("change", this.downloadChangeHandler);
+            maxDownloadFilesReset.removeEventListener("click", this.downloadResetHandler);
+
+            this.downloadChangeHandler = (e) => {
+                const value = e.target.value;
+                
+                // Validation en temps réel
+                if (value < minFiles || value > maxFiles) {
+                    e.target.style.borderColor = '#ef4444';
+                    helpText.textContent = `Valeur invalide! Doit être entre ${minFiles} et ${maxFiles}.`;
+                    helpText.style.color = '#ef4444';
+                } else {
+                    e.target.style.borderColor = '';
+                    helpText.textContent = `Recommandé: ${recommendedFiles} fichiers. Plus élevé = plus rapide mais plus de charge réseau.`;
+                    helpText.style.color = '#888';
+                    debouncedSave(value);
+                }
+            };
+
+            this.downloadResetHandler = async () => {
+                try {
+                    let configClient = await this.db.readData('configClient');
+                    if (!configClient.launcher_config) configClient.launcher_config = {};
+                    
+                    maxDownloadFilesInput.value = recommendedFiles;
+                    configClient.launcher_config.download_multi = recommendedFiles;
+                    await this.db.updateData('configClient', configClient);
+                    
+                    // Réinitialiser le style
+                    maxDownloadFilesInput.style.borderColor = '';
+                    helpText.textContent = `Recommandé: ${recommendedFiles} fichiers. Plus élevé = plus rapide mais plus de charge réseau.`;
+                    helpText.style.color = '#888';
+                } catch (error) {
+                    console.error('Erreur lors de la réinitialisation des téléchargements multiples:', error);
+                }
+            };
+
+            maxDownloadFilesInput.addEventListener("change", this.downloadChangeHandler);
+            maxDownloadFilesReset.addEventListener("click", this.downloadResetHandler);
+
+            // Optimisation : Gestion de la fermeture du launcher
+            const closeBox = document.querySelector(".close-box");
+            if (closeBox) {
+                this.setupCloseLauncherConfig(configClient);
+            }
+
+        } catch (error) {
+            console.error('Erreur lors de la configuration du launcher:', error);
+        }
+    }
+
+    async setupCloseLauncherConfig(configClient) {
+        try {
+            const closeBox = document.querySelector(".close-box");
+            if (!closeBox) return;
+
+            // Configuration actuelle
+            const currentCloseBehavior = configClient?.launcher_config?.closeLauncher || 'close-launcher';
+            
+            // Mettre à jour l'interface selon la configuration
+            const optionElements = closeBox.querySelectorAll('input[name="close-launcher"]');
+            optionElements.forEach(element => {
+                if (element.value === currentCloseBehavior) {
+                    element.checked = true;
+                }
+            });
+
+            // Gestionnaire de changement optimisé
+            const changeHandler = async (e) => {
+                try {
+                    let configClient = await this.db.readData('configClient');
+                    if (!configClient.launcher_config) configClient.launcher_config = {};
+                    
+                    configClient.launcher_config.closeLauncher = e.target.value;
+                    await this.db.updateData('configClient', configClient);
+                    
+                    console.log(`Comportement de fermeture mis à jour: ${e.target.value}`);
+                } catch (error) {
+                    console.error('Erreur lors de la sauvegarde du comportement de fermeture:', error);
+                }
+            };
+
+            // Nettoyer les anciens listeners et ajouter le nouveau
+            optionElements.forEach(element => {
+                element.removeEventListener('change', changeHandler);
+                element.addEventListener('change', changeHandler);
+            });
+
+        } catch (error) {
+            console.error('Erreur lors de la configuration de la fermeture du launcher:', error);
+        }
     }
 }
+
 export default Settings;
