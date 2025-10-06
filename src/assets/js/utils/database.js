@@ -157,6 +157,82 @@ class database {
     clearCache() {
         this.tableCache.clear();
     }
+
+    // Méthode pour vider complètement la base de données
+    async clearAllData() {
+        try {
+            console.log('🗑️ Vidage de la base de données en cours...');
+            
+            // Supprimer tous les comptes
+            const accounts = await this.readAllData('accounts');
+            for (const account of accounts) {
+                await this.deleteData('accounts', account.ID);
+            }
+            
+            // Réinitialiser la configuration client
+            const defaultConfig = {
+                account_selected: null,
+                instance_select: null,
+                java_config: {
+                    java_path: null,
+                    java_memory: {
+                        min: 2,
+                        max: 8
+                    }
+                },
+                game_config: {
+                    screen_size: {
+                        width: 1280,
+                        height: 720
+                    }
+                },
+                launcher_config: {
+                    download_multi: 5,
+                    theme: 'auto',
+                    closeLauncher: 'close-launcher',
+                    intelEnabledMac: true
+                }
+            };
+            
+            await this.updateData('configClient', defaultConfig);
+            
+            // Nettoyer le cache
+            this.clearCache();
+            
+            console.log('✅ Base de données vidée avec succès');
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Erreur lors du vidage de la base de données:', error);
+            return false;
+        }
+    }
+
+    // Méthode pour supprimer tous les comptes uniquement
+    async clearAccounts() {
+        try {
+            console.log('🗑️ Suppression de tous les comptes...');
+            
+            const accounts = await this.readAllData('accounts');
+            for (const account of accounts) {
+                await this.deleteData('accounts', account.ID);
+            }
+            
+            // Réinitialiser la sélection de compte
+            const configClient = await this.readData('configClient');
+            if (configClient) {
+                configClient.account_selected = null;
+                await this.updateData('configClient', configClient);
+            }
+            
+            console.log('✅ Tous les comptes ont été supprimés');
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Erreur lors de la suppression des comptes:', error);
+            return false;
+        }
+    }
 }
 
 export default database;

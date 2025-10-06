@@ -291,9 +291,25 @@ class Launcher {
                 //     await accountDiagnostic.diagnoseAllAccounts(this.db);
                 // }
                 
+                // Compteur d'échecs de reconnexion
+                let reconnectionFailures = 0;
+                
                 // Traitement des comptes
-                const accountPromises = accounts.map(account => this.processAccount(account, account_selected, configClient, popupRefresh));
+                const accountPromises = accounts.map(account => 
+                    this.processAccount(account, account_selected, configClient, popupRefresh)
+                        .catch(error => {
+                            reconnectionFailures++;
+                            console.error(`Échec de reconnexion pour ${account.name}:`, error);
+                            return null;
+                        })
+                );
                 await Promise.allSettled(accountPromises);
+
+                // Si tous les comptes ont échoué, proposer de vider la DB
+                if (reconnectionFailures === accounts.length && accounts.length > 0) {
+                    await this.handleAllReconnectionFailures(popupRefresh);
+                    return;
+                }
 
                 // Recharger les données après traitement
                 const updatedAccounts = await this.db.readAllData('accounts');
@@ -327,6 +343,106 @@ class Launcher {
             console.error('Erreur lors du démarrage du launcher:', error);
             changePanel('login');
         }
+    }
+
+    // Nouvelle méthode pour gérer les échecs de reconnexion
+    async handleAllReconnectionFailures(popupRefresh) {
+        console.warn('🚨 Tous les comptes ont échoué lors de la reconnexion');
+        
+        popupRefresh.openPopup({
+            title: 'Échec de reconnexion',
+            content: `
+                <div style="text-align: center; padding: 20px;">
+                    <p style="margin-bottom: 15px; color: #ff6b6b;">
+                        ❌ Impossible de reconnecter tous les comptes
+                    </p>
+                    <p style="margin-bottom: 20px; font-size: 14px; opacity: 0.8;">
+                        Cela peut être dû à des tokens expirés ou des problèmes de réseau.
+                    </p>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button id="clear-db-btn" style="
+                            background: #ff6b6b; 
+                            color: white; 
+                            border: none; 
+                            padding: 10px 20px; 
+                            border-radius: 5px; 
+                            cursor: pointer;
+                            font-weight: bold;
+                        ">
+                            Vider la base de données
+                        </button>
+                        <button id="retry-btn" style="
+                            background: #4ecdc4; 
+                            color: white; 
+                            border: none; 
+                            padding: 10px 20px; 
+                            border-radius: 5px; 
+                            cursor: pointer;
+                            font-weight: bold;
+                        ">
+                            Réessayer
+                        </button>
+                    </div>
+                </div>
+            `,
+            color: 'red',
+            exit: false,
+            options: false
+        });
+
+        // Ajouter les gestionnaires d'événements
+        setTimeout(() => {
+            const clearDbBtn = document.getElementById('clear-db-btn');
+            const retryBtn = document.getElementById('retry-btn');
+
+            if (clearDbBtn) {
+                clearDbBtn.addEventListener('click', async () => {
+                    console.log('🗑️ Utilisateur a choisi de vider la base de données');
+                    
+                    popupRefresh.openPopup({
+                        title: 'Vidage en cours...',
+                        content: 'Suppression des données corrompues...',
+                        color: 'orange',
+                        background: false
+                    });
+
+                    const success = await this.db.clearAllData();
+                    
+                    if (success) {
+                        popupRefresh.openPopup({
+                            title: 'Base de données vidée',
+                            content: 'Toutes les données ont été supprimées. Redirection vers la connexion...',
+                            color: 'green',
+                            background: false
+                        });
+                        
+                        setTimeout(() => {
+                            popupRefresh.closePopup();
+                            changePanel('login');
+                        }, 2000);
+                    } else {
+                        popupRefresh.openPopup({
+                            title: 'Erreur',
+                            content: 'Impossible de vider la base de données. Veuillez redémarrer le launcher.',
+                            color: 'red',
+                            options: true
+                        });
+                    }
+                });
+            }
+
+            if (retryBtn) {
+                retryBtn.addEventListener('click', async () => {
+                    console.log('🔄 Utilisateur a choisi de réessayer');
+                    popupRefresh.closePopup();
+                    
+                    // Attendre un peu avant de réessayer
+                    setTimeout(() => {
+                        this.startLauncher();
+                    }, 1000);
+                });
+            }
+        }, 100);
     }
 
     // Optimisation : Fonction séparée pour traiter chaque compte
@@ -382,7 +498,7 @@ class Launcher {
                     configClient.account_selected = null;
                     await this.db.updateData('configClient', configClient);
                 }
-                return;
+                throw new Error(`Échec de reconnexion Xbox: ${refresh_accounts.errorMessage}`);
             }
 
             // Optimisation : S'assurer que le nom est correct
@@ -409,6 +525,7 @@ class Launcher {
                 configClient.account_selected = null;
                 await this.db.updateData('configClient', configClient);
             }
+            throw error; // Propager l'erreur pour comptage des échecs
         }
     }
 
@@ -430,7 +547,7 @@ class Launcher {
                 await this.db.updateData('configClient', configClient);
             }
             console.error(`[Account] ${account.name}: ${refresh_accounts.message}`);
-            return;
+            throw new Error(`Échec de reconnexion AZauth: ${refresh_accounts.message}`);
         }
 
         refresh_accounts.ID = account_ID;
@@ -466,7 +583,7 @@ class Launcher {
                 await this.db.updateData('configClient', configClient);
             }
             console.error(`[Account] ${account.name}: ${refresh_accounts.errorMessage}`);
-            return;
+            throw new Error(`Échec de reconnexion Mojang: ${refresh_accounts.errorMessage}`);
         }
 
         refresh_accounts.ID = account_ID;

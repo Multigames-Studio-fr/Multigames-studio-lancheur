@@ -65,10 +65,41 @@ async function appdata() {
 
 async function addAccount(data) {
     try {
-        // Optimisation : Validation des données du compte
-        if (!data || !data.name) {
-            console.error('Données de compte invalides:', data);
+        // Optimisation : Validation approfondie des données du compte
+        console.log('Tentative d\'ajout de compte avec les données:', {
+            data: data,
+            hasData: !!data,
+            hasName: !!data?.name,
+            hasProfile: !!data?.profile,
+            hasUsername: !!data?.username,
+            metaType: data?.meta?.type,
+            uuid: data?.uuid
+        });
+
+        if (!data) {
+            console.error('Données de compte complètement manquantes');
             return null;
+        }
+
+        if (!data.name) {
+            console.error('Données de compte invalides - nom manquant:', {
+                data: data,
+                profile: data.profile,
+                username: data.username,
+                meta: data.meta
+            });
+            
+            // Tentative de récupération du nom depuis d'autres propriétés
+            if (data.profile?.name) {
+                data.name = data.profile.name;
+                console.log('Nom récupéré depuis profile:', data.name);
+            } else if (data.username) {
+                data.name = data.username;
+                console.log('Nom récupéré depuis username:', data.name);
+            } else {
+                console.error('Impossible de récupérer un nom valide pour le compte');
+                return null;
+            }
         }
 
         // Utiliser le nom correct selon le type de compte

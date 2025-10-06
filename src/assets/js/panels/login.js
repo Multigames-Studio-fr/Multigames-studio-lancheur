@@ -199,24 +199,39 @@ class Login {
                 throw new Error('Données de connexion manquantes');
             }
 
-            console.log('Sauvegarde des données de connexion:', connectionData);
+            // Debug : Afficher les données reçues pour diagnostiquer
+            console.log('Données de connexion reçues:', {
+                data: connectionData,
+                hasName: !!connectionData.name,
+                hasProfile: !!connectionData.profile,
+                hasUsername: !!connectionData.username,
+                metaType: connectionData.meta?.type
+            });
 
-            // S'assurer que le nom est défini correctement
-            if (!connectionData.name && connectionData.profile?.name) {
-                connectionData.name = connectionData.profile.name;
-            }
-            
-            // Pour les comptes Microsoft, s'assurer que le nom est présent
-            if (connectionData.meta?.type === 'Xbox' && !connectionData.name) {
+            // S'assurer que le nom est défini correctement selon le type de compte
+            if (!connectionData.name) {
                 if (connectionData.profile?.name) {
                     connectionData.name = connectionData.profile.name;
                 } else if (connectionData.username) {
                     connectionData.name = connectionData.username;
+                } else if (connectionData.meta?.type === 'Xbox' && connectionData.uuid) {
+                    connectionData.name = `Joueur_${connectionData.uuid.slice(-6)}`;
                 } else {
-                    console.warn('Nom de compte Microsoft manquant, utilisation d\'un nom par défaut');
                     connectionData.name = `Joueur_${Date.now().toString().slice(-6)}`;
                 }
+                console.log('Nom de compte généré automatiquement:', connectionData.name);
             }
+
+            // Validation finale avant sauvegarde
+            if (!connectionData.name || connectionData.name === 'undefined') {
+                throw new Error('Impossible de déterminer le nom du compte');
+            }
+
+            console.log('Sauvegarde des données de connexion:', {
+                name: connectionData.name,
+                type: connectionData.meta?.type,
+                uuid: connectionData.uuid
+            });
 
             let configClient = await this.db.readData('configClient');
             let account = await this.db.createData('accounts', connectionData);
@@ -250,6 +265,18 @@ class Login {
             }
 
             await this.db.updateData('configClient', configClient);
+            
+            // Validation finale avant d'ajouter le compte à l'interface
+            if (!account || !account.name) {
+                throw new Error('Compte créé mais données invalides pour l\'interface');
+            }
+            
+            console.log('Données du compte avant ajout à l\'interface:', {
+                ID: account.ID,
+                name: account.name,
+                meta: account.meta
+            });
+            
             await addAccount(account);
             await accountSelect(account);
             changePanel('home');
@@ -257,12 +284,20 @@ class Login {
             console.log('Compte sauvegardé avec succès:', account.name);
         } catch (error) {
             console.error('Erreur lors de la sauvegarde des données:', error);
+            console.error('Stack trace:', error.stack);
+            console.error('Données qui ont causé l\'erreur:', {
+                connectionData: connectionData,
+                hasConnectionData: !!connectionData,
+                connectionDataName: connectionData?.name
+            });
             
-            // Afficher un message d'erreur à l'utilisateur
+            // Afficher un message d'erreur plus détaillé à l'utilisateur
             let popupError = new popup();
             popupError.openPopup({
                 title: 'Erreur de sauvegarde',
-                content: 'Impossible de sauvegarder le compte. Veuillez réessayer.',
+                content: `Impossible de sauvegarder le compte.<br>
+                         Détails: ${error.message}<br>
+                         Veuillez réessayer ou contacter le support.`,
                 color: 'red',
                 options: true
             });
