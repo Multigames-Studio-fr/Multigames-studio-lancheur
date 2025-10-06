@@ -47,8 +47,26 @@ class Launcher {
                         java_17: { path: "", url: "" }
                     },
                     launcher_news: [],
-                    modpacks: []
+                    modpacks: [],
+                    // Configuration d'authentification par défaut
+                    online: false,
+                    client_id: null,
+                    dataDirectory: 'multigames-studio-launcher'
                 };
+            });
+            
+            // S'assurer que la configuration a les propriétés nécessaires
+            if (!this.config.hasOwnProperty('online')) {
+                this.config.online = false; // Mode offline par défaut
+            }
+            if (!this.config.hasOwnProperty('dataDirectory')) {
+                this.config.dataDirectory = 'multigames-studio-launcher';
+            }
+            
+            console.log('Configuration utilisée:', {
+                online: this.config.online,
+                dataDirectory: this.config.dataDirectory,
+                client_id: this.config.client_id ? 'Défini' : 'Non défini'
             });
             
             // Supprimer la vérification d'erreur car on retourne toujours une config valide maintenant

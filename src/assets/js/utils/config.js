@@ -97,7 +97,11 @@ class Config {
                     }
                 },
                 launcher_news: [],
-                modpacks: []
+                modpacks: [],
+                // Configuration d'authentification par défaut
+                online: false, // Mode offline par défaut quand le serveur n'est pas accessible
+                client_id: null, // Pas de client_id Microsoft en mode offline
+                dataDirectory: 'multigames-studio-launcher'
             };
             
             return defaultConfig;
@@ -143,7 +147,16 @@ class Config {
                 whitelistActive: false,
                 status: 'Prêt à jouer',
                 url: '',
-                whitelist: []
+                whitelist: [],
+                loadder: {
+                    minecraft_version: '1.20.1',
+                    loadder_type: 'none',
+                    loadder_version: 'latest'
+                },
+                verify: true,
+                ignored: [],
+                jvm_args: [],
+                game_args: []
             }];
             
             console.warn('Utilisation d\'une instance par défaut');

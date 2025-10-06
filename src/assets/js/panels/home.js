@@ -218,13 +218,51 @@ class Home {
     async startGame() {
         let launch = new Launch();
         let configClient = await this.db.readData('configClient')
-        let instancesObj = await config.getInstanceList()
+        let instancesList = await config.getInstanceList()
         let authenticator = await this.db.readData('accounts', configClient.account_selected)
-        let options = instancesObj[configClient.instance_selct]
+        
+        // Vérification de l'authentification
+        if (!authenticator) {
+            console.error('Aucun utilisateur connecté');
+            
+            // Si en mode offline, proposer de créer un compte offline
+            if (this.config && this.config.online === false) {
+                const offlineUsername = prompt("Entrez votre nom d'utilisateur offline (3-16 caractères):");
+                if (offlineUsername && offlineUsername.length >= 3 && offlineUsername.length <= 16 && !offlineUsername.includes(' ')) {
+                    // Créer un compte offline temporaire
+                    const { Mojang } = require('minecraft-java-core');
+                    const offlineAccount = await Mojang.login(offlineUsername);
+                    if (!offlineAccount.error) {
+                        authenticator = offlineAccount;
+                        console.log('Compte offline créé:', offlineUsername);
+                    } else {
+                        alert("Erreur lors de la création du compte offline.");
+                        return;
+                    }
+                } else {
+                    alert("Nom d'utilisateur invalide. Il doit faire entre 3 et 16 caractères sans espaces.");
+                    return;
+                }
+            } else {
+                alert("Vous devez vous connecter avant de pouvoir jouer !");
+                changePanel('login');
+                return;
+            }
+        }
+        
+        // Trouver l'instance sélectionnée dans la liste
+        let options = instancesList.find(instance => instance.name === configClient.instance_selct) || instancesList[0]
         if (!options) {
-            alert("Instance sélectionnée introuvable !");
+            console.error('Aucune instance disponible');
+            alert("Aucune instance de jeu disponible !");
             return;
         }
+
+        console.log('Démarrage du jeu avec:', {
+            instance: options.name,
+            user: authenticator.name || authenticator.username,
+            version: options.loadder?.minecraft_version
+        });
 
         // Sélectionne les bons éléments
         let playInstanceBTN = document.querySelector('.play-instance');
@@ -245,45 +283,60 @@ class Home {
         }
 
         let opt = {
-            url: options.url,
+            url: options.url || '',
             authenticator: authenticator,
             timeout: 10000,
             path: `${await appdata()}/${process.platform == 'darwin' ? this.config.dataDirectory : `.${this.config.dataDirectory}`}`,
             instance: options.name,
-            version: options.loadder.minecraft_version,
-            detached: configClient.launcher_config.closeLauncher == "close-all" ? false : true,
-            downloadFileMultiple: configClient.launcher_config.download_multi,
-            intelEnabledMac: configClient.launcher_config.intelEnabledMac,
+            version: options.loadder?.minecraft_version || '1.20.1',
+            detached: configClient.launcher_config?.closeLauncher == "close-all" ? false : true,
+            downloadFileMultiple: configClient.launcher_config?.download_multi || 5,
+            intelEnabledMac: configClient.launcher_config?.intelEnabledMac || false,
 
             loader: {
-                type: options.loadder.loadder_type,
-                build: options.loadder.loadder_version,
-                enable: options.loadder.loadder_type == 'none' ? false : true
+                type: options.loadder?.loadder_type || 'none',
+                build: options.loadder?.loadder_version || 'latest',
+                enable: (options.loadder?.loadder_type && options.loadder.loadder_type !== 'none') ? true : false
             },
 
-            verify: options.verify,
+            verify: options.verify !== undefined ? options.verify : true,
 
-            ignored: [...options.ignored],
+            ignored: options.ignored ? [...options.ignored] : [],
 
             java: {
-                path: configClient.java_config.java_path,
+                path: configClient.java_config?.java_path || '',
             },
 
-            JVM_ARGS:  options.jvm_args ? options.jvm_args : [],
+            JVM_ARGS: options.jvm_args ? options.jvm_args : [],
             GAME_ARGS: options.game_args ? options.game_args : [],
 
             screen: {
-                width: configClient.game_config.screen_size.width,
-                height: configClient.game_config.screen_size.height
+                width: configClient.game_config?.screen_size?.width || 1280,
+                height: configClient.game_config?.screen_size?.height || 720
             },
 
             memory: {
-                min: `${configClient.java_config.java_memory.min * 1024}M`,
-                max: `${configClient.java_config.java_memory.max * 1024}M`
+                min: `${(configClient.java_config?.java_memory?.min || 2) * 1024}M`,
+                max: `${(configClient.java_config?.java_memory?.max || 4) * 1024}M`
             }
         }
 
-        launch.Launch(opt);
+        try {
+            launch.Launch(opt);
+        } catch (error) {
+            console.error('Erreur lors du lancement:', error);
+            infoStartingBOX.style.display = "none";
+            playInstanceBTN.style.display = "flex";
+            updateProgress(0, 'En attente...');
+            
+            if (error.message && error.message.includes('Authenticator not found')) {
+                alert("Erreur d'authentification. Veuillez vous reconnecter.");
+                changePanel('login');
+            } else {
+                alert("Erreur lors du lancement du jeu: " + error.message);
+            }
+            return;
+        }
 
         launch.on('extract', extract => {
             updateProgress(10, 'Extraction...');
@@ -315,9 +368,17 @@ class Home {
         });
 
         launch.on('error', err => {
+            console.error('Erreur de lancement:', err);
             infoStartingBOX.style.display = "none";
             playInstanceBTN.style.display = "flex";
             updateProgress(0, 'En attente...');
+            
+            if (err.error && err.error === 'Authenticator not found') {
+                alert("Erreur d'authentification. Veuillez vous reconnecter.");
+                changePanel('login');
+            } else {
+                alert("Erreur lors du lancement: " + (err.message || err.error || 'Erreur inconnue'));
+            }
         });
     }
 
