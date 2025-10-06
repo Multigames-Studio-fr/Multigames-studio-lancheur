@@ -3,7 +3,22 @@
  * Luuxis License v1.0 (voir fichier LICENSE pour les détails en FR/EN)
  */
 
-const pkg = require('../package.json');
+const path = require('path');
+
+let pkg;
+try {
+    pkg = require(path.join(process.cwd(), 'package.json'));
+    console.log('Package.json loaded successfully:', pkg.name, pkg.version);
+} catch (error) {
+    console.error('Erreur lors du chargement de package.json:', error);
+    // Valeurs par défaut en cas d'erreur
+    pkg = {
+        name: 'multigames-studio-launcher',
+        version: '1.0.0',
+        url: 'http://lancheur-set.multigames-studio.fr:6730'
+    };
+}
+
 const nodeFetch = require("node-fetch");
 const convert = require('xml-js');
 
@@ -26,9 +41,12 @@ class Config {
 
     async GetConfig() {
         try {
+            console.log('Tentative de chargement de la configuration depuis:', config);
+            
             // Optimisation : Utiliser le cache si encore valide
             const now = Date.now();
             if (this.configCache && (now - this.configCacheTime) < this.CACHE_DURATION) {
+                console.log('Utilisation de la configuration en cache');
                 return this.configCache;
             }
 
@@ -47,12 +65,15 @@ class Config {
                 this.configCache = configData;
                 this.configCacheTime = now;
                 
+                console.log('Configuration chargée avec succès');
                 return configData;
             } else {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
         } catch (error) {
-            console.error('Erreur lors du chargement de la configuration:', error);
+            console.error('Erreur lors du chargement de la configuration:', error.message);
+            console.error('URL tentée:', config);
+            console.error('Type d\'erreur:', error.name);
             
             // Retourner le cache si disponible en cas d'erreur
             if (this.configCache) {
@@ -60,18 +81,34 @@ class Config {
                 return this.configCache;
             }
             
-            throw { 
-                error: { 
-                    code: error.code || 'CONFIG_ERROR', 
-                    message: error.message || 'Impossible de charger la configuration'
-                } 
+            // Retourner une configuration par défaut en cas d'échec total
+            console.warn('Utilisation de la configuration par défaut');
+            const defaultConfig = {
+                maintenance: false,
+                game_news: [],
+                java: {
+                    java_8: {
+                        path: "",
+                        url: ""
+                    },
+                    java_17: {
+                        path: "",
+                        url: ""
+                    }
+                },
+                launcher_news: [],
+                modpacks: []
             };
+            
+            return defaultConfig;
         }
     }
 
     async getInstanceList() {
         try {
             const urlInstance = `${url}/files`;
+            console.log('Tentative de chargement des instances depuis:', urlInstance);
+            
             const response = await nodeFetch(urlInstance, {
                 timeout: 15000,
                 headers: {
@@ -94,10 +131,23 @@ class Config {
                 instancesList.push(instance);
             }
 
+            console.log(`${instancesList.length} instances chargées avec succès`);
             return instancesList;
         } catch (error) {
-            console.error('Erreur lors du chargement de la liste des instances:', error);
-            return []; // Retourner une liste vide en cas d'erreur
+            console.error('Erreur lors du chargement de la liste des instances:', error.message);
+            console.error('URL tentée:', `${url}/files`);
+            
+            // Retourner une instance par défaut en cas d'erreur
+            const defaultInstance = [{
+                name: 'default',
+                whitelistActive: false,
+                status: 'Prêt à jouer',
+                url: '',
+                whitelist: []
+            }];
+            
+            console.warn('Utilisation d\'une instance par défaut');
+            return defaultInstance;
         }
     }
 

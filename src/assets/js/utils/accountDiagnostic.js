@@ -193,4 +193,4 @@ class AccountDiagnostic {
 // Instance globale
 const accountDiagnostic = new AccountDiagnostic();
 
-export default accountDiagnostic;
+module.exports = accountDiagnostic;

@@ -119,10 +119,23 @@ class Home {
 
         if (!instanceSelect) {
             let newInstanceSelect = instancesList.find(i => i.whitelistActive == false)
-            let configClient = await this.db.readData('configClient')
-            configClient.instance_selct = newInstanceSelect.name
-            instanceSelect = newInstanceSelect.name
-            await this.db.updateData('configClient', configClient)
+            if (newInstanceSelect) {
+                let configClient = await this.db.readData('configClient')
+                configClient.instance_selct = newInstanceSelect.name
+                instanceSelect = newInstanceSelect.name
+                await this.db.updateData('configClient', configClient)
+            } else {
+                // Aucune instance disponible, utiliser la première de la liste
+                if (instancesList.length > 0) {
+                    let configClient = await this.db.readData('configClient')
+                    configClient.instance_selct = instancesList[0].name
+                    instanceSelect = instancesList[0].name
+                    await this.db.updateData('configClient', configClient)
+                } else {
+                    console.warn('Aucune instance disponible')
+                    return
+                }
+            }
         }
 
         for (let instance of instancesList) {
@@ -131,11 +144,15 @@ class Home {
                 if (whitelist !== auth?.name) {
                     if (instance.name == instanceSelect) {
                         let newInstanceSelect = instancesList.find(i => i.whitelistActive == false)
-                        let configClient = await this.db.readData('configClient')
-                        configClient.instance_selct = newInstanceSelect.name
-                        instanceSelect = newInstanceSelect.name
-                        setStatus(newInstanceSelect.status)
-                        await this.db.updateData('configClient', configClient)
+                        if (newInstanceSelect) {
+                            let configClient = await this.db.readData('configClient')
+                            configClient.instance_selct = newInstanceSelect.name
+                            instanceSelect = newInstanceSelect.name
+                            setStatus(newInstanceSelect.status)
+                            await this.db.updateData('configClient', configClient)
+                        } else {
+                            console.warn('Aucune instance publique disponible')
+                        }
                     }
                 }
             } else console.log(`Initializing instance ${instance.name}...`)

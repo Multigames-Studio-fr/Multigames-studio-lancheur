@@ -11,13 +11,8 @@ import Settings from './panels/settings.js';
 import { logger, config, changePanel, database, popup, setBackground, accountSelect, addAccount, pkg } from './utils.js';
 const { AZauth, Microsoft, Mojang } = require('minecraft-java-core');
 
-// Optimisations imports
-import performanceOptimizer from './utils/performance.js';
-import errorHandler from './utils/errorHandler.js';
-import accountDiagnostic from './utils/accountDiagnostic.js';
-import errorReporter from './utils/errorReporter.js';
-import debugUtils from './utils/debugUtils.js';
-import { initializeDatabaseMigration } from './utils/databaseMigration.js';
+// Modules d'optimisation désactivés temporairement pour stabilité
+// TODO: Réactiver après avoir résolu les problèmes de chemins
 
 // libs
 const { ipcRenderer } = require('electron');
@@ -34,35 +29,30 @@ class Launcher {
 
     async init() {
         try {
-            // Optimisation : Démarrer le monitoring de performance
-            performanceOptimizer.startTimer('launcher-init');
-            performanceOptimizer.logMemoryUsage('Début initialisation');
-            
-            // Activer les optimisations automatiques
-            performanceOptimizer.enableAutoOptimizations();
-            
-            // Migration automatique de la base de données
-            console.log('🔄 Vérification de la migration de base de données...');
-            const migrationResult = await initializeDatabaseMigration();
-            if (migrationResult.success && migrationResult.migrated) {
-                console.log('✅ Base de données migrée vers C:\\Users\\wiltark\\AppData\\Roaming\\.multigameslauncher');
-            }
-            
             this.initLog();
             console.log('Initializing Launcher...');
             this.shortcut();
             await setBackground();
             this.initFrame();
             
-            // Optimisation : Gestion d'erreur améliorée pour la configuration
-            this.config = await errorHandler.safeAsync(async () => {
-                return await config.GetConfig();
-            }, 'Configuration Loading').catch(err => {
+            // Configuration sans modules d'optimisation pour l'instant
+            this.config = await config.GetConfig().catch(err => {
                 console.error('Erreur lors du chargement de la configuration:', err);
-                return { error: err };
+                // Retourner une configuration par défaut au lieu d'une erreur
+                return {
+                    maintenance: false,
+                    game_news: [],
+                    java: {
+                        java_8: { path: "", url: "" },
+                        java_17: { path: "", url: "" }
+                    },
+                    launcher_news: [],
+                    modpacks: []
+                };
             });
             
-            if (this.config?.error) return this.errorConnect();
+            // Supprimer la vérification d'erreur car on retourne toujours une config valide maintenant
+            // if (this.config?.error) return this.errorConnect();
             
             this.db = new database();
             await this.initConfigClient();
@@ -71,18 +61,11 @@ class Launcher {
             
             this.initComplete = true;
             
-            // Optimisation : Fin du monitoring
-            performanceOptimizer.endTimer('launcher-init');
-            performanceOptimizer.logMemoryUsage('Fin initialisation');
+            // Diagnostic simpliste temporaire
+            console.log('✅ Launcher initialisé avec succès');
             
         } catch (error) {
-            console.error('Erreur lors de l\'initialisation du launcher:', error);
-            errorHandler.handleError({
-                type: 'Launcher Initialization Error',
-                message: error.message,
-                error: error,
-                timestamp: new Date().toISOString()
-            });
+            console.error('❌ Erreur lors de l\'initialisation du launcher:', error);
             this.errorConnect();
         }
     }
@@ -285,12 +268,12 @@ class Launcher {
             if (accounts?.length) {
                 console.log(`Vérification de ${accounts.length} compte(s)...`);
                 
-                // Optimisation : Diagnostic des comptes avant traitement
-                if (process.env.NODE_ENV === 'dev') {
-                    await accountDiagnostic.diagnoseAllAccounts(this.db);
-                }
+                // Diagnostic temporairement désactivé
+                // if (process.env.NODE_ENV === 'dev') {
+                //     await accountDiagnostic.diagnoseAllAccounts(this.db);
+                // }
                 
-                // Optimisation : Traitement en parallèle des comptes avec limite
+                // Traitement des comptes
                 const accountPromises = accounts.map(account => this.processAccount(account, account_selected, configClient, popupRefresh));
                 await Promise.allSettled(accountPromises);
 

@@ -6,7 +6,20 @@
 const { app, BrowserWindow, Menu } = require("electron");
 const path = require("path");
 const os = require("os");
-const pkg = require("../../../../package.json");
+
+let pkg;
+try {
+    pkg = require(path.join(process.cwd(), 'package.json'));
+    console.log('MainWindow.js: Package.json loaded successfully');
+} catch (error) {
+    console.error('MainWindow.js: Erreur lors du chargement de package.json:', error);
+    // Valeurs par défaut
+    pkg = {
+        name: 'multigames-studio-launcher',
+        version: '1.0.0',
+        productName: 'MultiGames Studio Launcher'
+    };
+}
 let dev = process.env.DEV_TOOL === 'open';
 let mainWindow = undefined;
 
@@ -37,7 +50,7 @@ function createWindow() {
         
         // Optimisation : Configuration améliorée de la fenêtre avec sécurité
         mainWindow = new BrowserWindow({
-            title: pkg.preductname,
+            title: pkg.productName,
             width: 1214,
             height: 720,
             minWidth: 980,

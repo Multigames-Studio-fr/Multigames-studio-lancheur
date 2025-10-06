@@ -5,7 +5,8 @@
 
 const { ipcRenderer } = require('electron');
 const os = require('os');
-const pkg = require('../package.json');
+const path = require('path');
+const pkg = require(path.join(process.cwd(), 'package.json'));
 
 class ErrorReporter {
     constructor() {
@@ -291,4 +292,4 @@ class ErrorReporter {
 // Instance globale
 const errorReporter = new ErrorReporter();
 
-export default errorReporter;
+module.exports = errorReporter;

@@ -3,7 +3,7 @@
  * Gestionnaire d'erreurs centralisé et amélioré avec rapport Discord
  */
 
-import errorReporter from './errorReporter.js';
+const errorReporter = require('./errorReporter.js');
 
 class ErrorHandler {
     constructor() {
@@ -313,4 +313,4 @@ if (typeof require !== 'undefined') {
     }
 }
 
-export default errorHandler;
+module.exports = errorHandler;

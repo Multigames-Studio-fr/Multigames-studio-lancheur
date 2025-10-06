@@ -4,7 +4,21 @@
  */
 
 const { ipcRenderer, shell } = require('electron');
-const pkg = require('../package.json');
+const path = require('path');
+
+let pkg;
+try {
+    pkg = require(path.join(process.cwd(), 'package.json'));
+    console.log('Index.js: Package.json loaded successfully');
+} catch (error) {
+    console.error('Index.js: Erreur lors du chargement de package.json:', error);
+    // Valeurs par défaut
+    pkg = {
+        name: 'multigames-studio-launcher',
+        version: '1.0.0',
+        productName: 'MultiGames Studio Launcher'
+    };
+}
 const os = require('os');
 import { config, database } from './utils.js';
 const nodeFetch = require("node-fetch");

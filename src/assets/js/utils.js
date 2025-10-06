@@ -6,7 +6,21 @@
 const { ipcRenderer } = require('electron')
 const { Status } = require('minecraft-java-core')
 const fs = require('fs');
-const pkg = require('../package.json');
+const path = require('path');
+
+let pkg;
+try {
+    pkg = require(path.join(process.cwd(), 'package.json'));
+    console.log('Utils.js: Package.json loaded successfully');
+} catch (error) {
+    console.error('Utils.js: Erreur lors du chargement de package.json:', error);
+    // Valeurs par défaut
+    pkg = {
+        name: 'multigames-studio-launcher',
+        version: '1.0.0',
+        productName: 'MultiGames Studio Launcher'
+    };
+}
 
 import config from './utils/config.js';
 import database from './utils/database.js';

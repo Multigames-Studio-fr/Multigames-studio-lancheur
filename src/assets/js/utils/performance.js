@@ -189,4 +189,4 @@ class PerformanceOptimizer {
 const performanceOptimizer = new PerformanceOptimizer();
 
 // Export pour utilisation dans d'autres modules
-export default performanceOptimizer;
+module.exports = performanceOptimizer;
